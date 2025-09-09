@@ -407,8 +407,16 @@ class ClosureCalc(tk.Tk):
         if dist!=0:
             closure = distance/dist
 
+
+        b_degrees = bearing*180/3.141592653
+
+        b_d = math.floor(b_degrees)
+        b_min = (b_degrees-b_d)*60
+        b_m = math.floor(b_min)
+        b_s = (b_min-b_m)*60
+
         t.color("black")
-        t.write("Closure: 1/%.0f \nd:%.3f di: %.3f\n(x: %.3f, y: %.3f)"%(closure,dist,distance,x,y))
+        t.write("Closure: 1/%.0f \nd:%.3f di: %.3f\n(x: %.3f, y: %.3f)\nBearing: %d-%d-%.3f"%(closure,dist,distance,x,y,b_d,b_m,b_s))
 
         self.tscreen.update()  # Turn off automatic screen updates
     
