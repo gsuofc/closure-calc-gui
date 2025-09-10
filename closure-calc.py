@@ -260,6 +260,8 @@ class ClosureCalc(tk.Tk):
         bearing=0
         distance = 0
 
+        radius = 0
+
         minx = -5
         miny = -5
         maxx = 5
@@ -300,35 +302,38 @@ class ClosureCalc(tk.Tk):
                     b += float(rs)/(60*60)
                     b-=90
                     bearing = math.radians(b)
+                
+                print("prev radius is %f"%radius)
 
-                if self.is_number(d) and self.is_number(m) and self.is_number(s) and self.is_number(r):
+                if self.is_number(r):
+                    radius = float(r)
+
+                if self.is_number(d) and self.is_number(m) and self.is_number(s) and radius!=0:
                     # If interior angle is given, compute the curve from that
                     dd = float(d)
                     dd += float(m)/60
                     dd += float(s)/(60*60)
-                    if float(r)<0:
+                    if radius<0:
                         dd*=-1
 
-                    (dx,dy,bearing_new) = self.compute_dxdy_from_curve_delta(bearing,math.radians(dd),float(r))
+                    (dx,dy,bearing_new) = self.compute_dxdy_from_curve_delta(bearing,math.radians(dd),radius)
                     x+=dx
                     y+=dy
 
                     t.seth((90-math.degrees(bearing))%360)
-                    t.circle(float(r),abs(dd))
+                    t.circle(radius,abs(dd))
 
                     bearing = bearing_new
-                    distance+=abs(float(r)*math.radians(dd))
-                elif self.is_number(r) and self.is_number(a):
+                    distance+=abs(radius*math.radians(dd))
+                elif radius!=0 and self.is_number(a):
                     #if the arc length is given, convert to interior angle and then compute from that
-                    rad = 0
-                    if float(r)!=0:
-                        rad = float(a)/float(r)
-                    (dx,dy,bearing_new) = self.compute_dxdy_from_curve_delta(bearing,rad,float(r))
+                    rad = float(a)/radius
+                    (dx,dy,bearing_new) = self.compute_dxdy_from_curve_delta(bearing,rad,radius)
                     x+=dx
                     y+=dy
 
                     t.seth((90-math.degrees(bearing))%360)
-                    t.circle(float(r),abs(math.degrees(rad)))
+                    t.circle(radius,abs(math.degrees(rad)))
 
                     bearing = bearing_new
                     distance+=abs(float(a))
@@ -339,6 +344,9 @@ class ClosureCalc(tk.Tk):
                 m = row_widgets["min"].get()
                 s = row_widgets["sec"].get()
                 di = row_widgets["distance"].get()
+
+                # Reset the curve radius
+                radius = 0
 
                 if self.is_number(di):
                     # If a new bearing is given, use that as the bearing. Otherwise reuse the last bearing
