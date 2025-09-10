@@ -407,8 +407,10 @@ class ClosureCalc(tk.Tk):
         if dist!=0:
             closure = distance/dist
 
+        while bearing>2*math.pi:
+            bearing-=2*math.pi
 
-        b_degrees = bearing*180/3.141592653
+        b_degrees = bearing*180/math.pi
 
         b_d = math.floor(b_degrees)
         b_min = (b_degrees-b_d)*60
