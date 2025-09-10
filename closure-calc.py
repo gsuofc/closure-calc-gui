@@ -84,18 +84,25 @@ class ClosureCalc(tk.Tk):
             row_widgets[field] = tk.Entry(self.scrollable_frame, width=10)
             row_widgets[field].bind("<FocusOut>", lambda e, r=row_widgets: self.on_entry_edit(r))
 
-        def on_insert_clicked():
-            # Find current index of this row_widgets
-            current_index = self.rows.index(row_widgets)
-            self.insert_row_at(current_index)
+        def make_insert_callback(index):
+            return lambda: self.insert_row_at(index)
 
-        insert_btn = tk.Button(
+        def make_remove_callback(index):
+            return lambda: self.remove_row_at(index)
+
+        row_widgets["insert_btn"] = tk.Button(
             self.scrollable_frame,
             text="+",
             width=2,
-            command=on_insert_clicked
+            command=make_insert_callback(index)
         )
-        row_widgets["insert_btn"] = insert_btn
+
+        row_widgets["remove_btn"] = tk.Button(
+            self.scrollable_frame,
+            text="-",
+            width=2,
+            command=make_remove_callback(index)
+        )
 
         self.rows.insert(index, row_widgets)
         self.regrid_rows()
@@ -184,6 +191,15 @@ class ClosureCalc(tk.Tk):
 
     def insert_row_at(self, index):
         self.add_row(index)
+        
+    def remove_row_at(self, index):
+        if index < len(self.rows) - 2:
+            row_widgets = self.rows.pop(index)
+            for widget in row_widgets.values():
+                if isinstance(widget, (tk.Entry, tk.Checkbutton, tk.Button)):
+                    widget.destroy()
+        self.regrid_rows()
+        self.compute_closure()
 
     def regrid_rows(self):
         for i, row_widgets in enumerate(self.rows, start=1):
@@ -210,6 +226,11 @@ class ClosureCalc(tk.Tk):
 
             # Grid the Insert Row button
             row_widgets["insert_btn"].grid(row=i, column=10, padx=3, pady=2)
+            row_widgets["remove_btn"].grid(row=i, column=11, padx=3, pady=2)
+
+            row_widgets["insert_btn"].configure(command=lambda idx=i-1: self.insert_row_at(idx))
+            row_widgets["remove_btn"].configure(command=lambda idx=i-1: self.remove_row_at(idx))
+
         
 
 
@@ -302,8 +323,6 @@ class ClosureCalc(tk.Tk):
                     b += float(rs)/(60*60)
                     b-=90
                     bearing = math.radians(b)
-                
-                print("prev radius is %f"%radius)
 
                 if self.is_number(r):
                     radius = float(r)
