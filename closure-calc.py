@@ -87,7 +87,7 @@ class ClosureCalc(tk.Tk):
         def on_insert_clicked():
             # Find current index of this row_widgets
             current_index = self.rows.index(row_widgets)
-            self.insert_row_at(current_index + 1)
+            self.insert_row_at(current_index)
 
         insert_btn = tk.Button(
             self.scrollable_frame,
