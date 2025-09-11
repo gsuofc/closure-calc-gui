@@ -83,6 +83,8 @@ class ClosureCalc(tk.Tk):
         for field in fields:
             row_widgets[field] = tk.Entry(self.scrollable_frame, width=10)
             row_widgets[field].bind("<FocusOut>", lambda e, r=row_widgets: self.on_entry_edit(r))
+            row_widgets[field].bind("<Return>", lambda e, f=field, i=index: self.focus_next_row_field(i, f))
+            row_widgets[field].bind("<Shift-Return>", lambda e, f=field, i=index: self.focus_prev_row_field(i, f))
 
         def make_insert_callback(index):
             return lambda: self.insert_row_at(index)
@@ -106,6 +108,28 @@ class ClosureCalc(tk.Tk):
 
         self.rows.insert(index, row_widgets)
         self.regrid_rows()
+
+    def focus_next_row_field(self, index, field):
+        next_index = index + 1
+        if next_index < len(self.rows):
+            next_row = self.rows[next_index]
+            if field in next_row and next_row[field].winfo_viewable():
+                next_widget = next_row[field]
+                next_widget.focus_set()
+            else:
+                next_widget = next_row["deg"]
+                next_widget.focus_set()
+
+    def focus_prev_row_field(self, index, field):
+        prev_index = index - 1
+        if prev_index > 0:
+            prev_row = self.rows[prev_index]
+            if field in prev_row and prev_row[field].winfo_viewable():
+                next_widget = prev_row[field]
+                next_widget.focus_set()
+            else:
+                next_widget = prev_row["deg"]
+                next_widget.focus_set()
 
     def save_closure(self):
         # Takes the values in all the inputs and saves them to a JSON file
@@ -230,9 +254,6 @@ class ClosureCalc(tk.Tk):
 
             row_widgets["insert_btn"].configure(command=lambda idx=i-1: self.insert_row_at(idx))
             row_widgets["remove_btn"].configure(command=lambda idx=i-1: self.remove_row_at(idx))
-
-        
-
 
     def toggle_fields(self, row_widgets):
         # When the "curve" checkbox is changed, change which boxes are visible
