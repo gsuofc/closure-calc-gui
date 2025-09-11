@@ -4,6 +4,7 @@ import turtle
 import json
 from tkinter import filedialog
 from tkinter import messagebox as mb
+from functools import partial
 
 class ClosureCalc(tk.Tk):
     def on_close(self):
@@ -80,11 +81,12 @@ class ClosureCalc(tk.Tk):
             "rb_deg", "rb_min", "rb_sec"
         ]
 
+
         for field in fields:
             row_widgets[field] = tk.Entry(self.scrollable_frame, width=10)
             row_widgets[field].bind("<FocusOut>", lambda e, r=row_widgets: self.on_entry_edit(r))
-            row_widgets[field].bind("<Return>", lambda e, f=field, i=index: self.focus_next_row_field(i, f))
-            row_widgets[field].bind("<Shift-Return>", lambda e, f=field, i=index: self.focus_prev_row_field(i, f))
+            row_widgets[field].bind("<Return>", partial(self._handle_return, index, field))
+            row_widgets[field].bind("<Shift-Return>", partial(self._handle_shift_return, index, field))
 
         def make_insert_callback(index):
             return lambda: self.insert_row_at(index)
@@ -108,6 +110,12 @@ class ClosureCalc(tk.Tk):
 
         self.rows.insert(index, row_widgets)
         self.regrid_rows()
+
+    def _handle_return(self, index, field, event):
+        self.focus_next_row_field(index, field)
+
+    def _handle_shift_return(self, index, field, event):
+        self.focus_prev_row_field(index, field)
 
     def focus_next_row_field(self, index, field):
         next_index = index + 1
