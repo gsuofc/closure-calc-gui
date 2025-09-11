@@ -35,6 +35,8 @@ class ClosureCalc(tk.Tk):
         scrollbar = tk.Scrollbar(container, orient="vertical", command=canvas.yview)
         self.scrollable_frame = tk.Frame(canvas)
 
+        self.currently_drawing = False
+
         self.scrollable_frame.bind(
             "<Configure>",
             lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
@@ -304,6 +306,9 @@ class ClosureCalc(tk.Tk):
             return False
 
     def compute_closure(self):
+        if self.currently_drawing:
+            return
+        self.currently_drawing = True
         self.distances = []
         x=0
         y=0
@@ -477,6 +482,8 @@ class ClosureCalc(tk.Tk):
         t.write("Closure: 1/%.0f \nd:%.3f di: %.3f\n(x: %.3f, y: %.3f)\nBearing: %d-%d-%.3f"%(closure,dist,distance,x,y,b_d,b_m,b_s))
 
         self.tscreen.update()  # Turn off automatic screen updates
+
+        self.currently_drawing = False
     
     def compute_dxdy_from_straightline(self,rads,di):
         # Using a distance and angle, compute the next set of coords (direct problem)
