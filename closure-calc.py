@@ -56,10 +56,12 @@ class ClosureCalc(tk.Tk):
         for col, text in enumerate(headers):
             label = tk.Label(self.scrollable_frame, text=text, font=("Arial", 10, "bold"))
             label.grid(row=0, column=col, padx=5, pady=5)
-
+        
+        self.row_id = 1
         self.rows = []
         for i in range(1,10):
             self.add_row()
+
 
     def add_row(self, index=None):
         if index is None:
@@ -82,11 +84,13 @@ class ClosureCalc(tk.Tk):
             "rb_deg", "rb_min", "rb_sec"
         ]
 
+        rid = self.row_id
+
         for field in fields:
             row_widgets[field] = tk.Entry(self.scrollable_frame, width=10)
             row_widgets[field].bind("<FocusOut>", lambda e, r=row_widgets: self.on_entry_edit(r))
-            row_widgets[field].bind("<Return>", lambda e, f=field, i=index: self.focus_next_row_field(i, f))
-            row_widgets[field].bind("<Shift-Return>", lambda e, f=field, i=index: self.focus_prev_row_field(i, f))
+            row_widgets[field].bind("<Return>", lambda e, f=field, i=rid: self.focus_next_row_field(i, f))
+            row_widgets[field].bind("<Shift-Return>", lambda e, f=field, i=self.row_id: self.focus_prev_row_field(i, f))
 
         def make_insert_callback(index):
             return lambda: self.insert_row_at(index)
@@ -108,11 +112,20 @@ class ClosureCalc(tk.Tk):
             command=make_remove_callback(index)
         )
 
+        row_widgets["id"] = self.row_id
+
+        self.row_id+=1
+
         self.rows.insert(index, row_widgets)
         self.regrid_rows()
 
     def focus_next_row_field(self, index, field):
-        next_index = index + 1
+        cur_row = 0
+        for i in self.rows:
+            if i["id"]==index:
+                break
+            cur_row +=1
+        next_index = cur_row + 1
         if next_index < len(self.rows):
             next_row = self.rows[next_index]
             if field in next_row and next_row[field].winfo_viewable():
@@ -123,8 +136,13 @@ class ClosureCalc(tk.Tk):
                 next_widget.focus_set()
 
     def focus_prev_row_field(self, index, field):
-        prev_index = index - 1
-        if prev_index > 0:
+        cur_row = 0
+        for i in self.rows:
+            if i["id"]==index:
+                break
+            cur_row +=1
+        prev_index = cur_row - 1
+        if prev_index >= 0:
             prev_row = self.rows[prev_index]
             if field in prev_row and prev_row[field].winfo_viewable():
                 next_widget = prev_row[field]
