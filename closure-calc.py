@@ -89,8 +89,12 @@ class ClosureCalc(tk.Tk):
         for field in fields:
             row_widgets[field] = tk.Entry(self.scrollable_frame, width=10)
             row_widgets[field].bind("<FocusOut>", lambda e, r=row_widgets: self.on_entry_edit(r))
-            row_widgets[field].bind("<Return>", lambda e, f=field, i=rid: self.focus_next_row_field(i, f))
-            row_widgets[field].bind("<Shift-Return>", lambda e, f=field, i=self.row_id: self.focus_prev_row_field(i, f))
+            row_widgets[field].bind("<Down>", lambda e, f=field, i=rid: self.focus_next_row_field(i, f))
+            row_widgets[field].bind("<Up>", lambda e, f=field, i=self.row_id: self.focus_prev_row_field(i, f))
+            row_widgets[field].bind("<Return>", lambda e, f=field, i=rid: self.focus_next_row_field_return(i, f))
+            row_widgets[field].bind("<Left>", lambda e, f=field, i=rid: self.focus_prev_field_in_row(i, f))
+            row_widgets[field].bind("<Right>", lambda e, f=field, i=rid: self.focus_next_field_in_row(i, f))
+            row_widgets[field].bind("<space>", lambda e, f=field, i=rid: self.toggle_curve(i, f))
 
         def make_insert_callback(index):
             return lambda: self.insert_row_at(index)
@@ -119,6 +123,64 @@ class ClosureCalc(tk.Tk):
         self.rows.insert(index, row_widgets)
         self.regrid_rows()
 
+    def focus_next_field_in_row(self, row_id, field):
+        field_order = [
+            "deg", "min", "sec",
+            "distance", "radius", "arc",
+            "rb_deg", "rb_min", "rb_sec"
+        ]
+        current_index = next((i for i, row in enumerate(self.rows) if row["id"] == row_id), None)
+        if current_index is None:
+            return
+
+        try:
+            idx = field_order.index(field)
+        except ValueError:
+            return
+
+        for next_idx in range(idx + 1, len(field_order)):
+            next_field = field_order[next_idx]
+            if next_field in self.rows[current_index] and self.rows[current_index][next_field].winfo_viewable():
+                self.rows[current_index][next_field].focus_set()
+                break
+
+    def toggle_curve(self, index, field):
+        cur_row = 0
+        for i in self.rows:
+            if i["id"]==index:
+                break
+            cur_row +=1
+
+        next_row = self.rows[cur_row]
+        next_row["curve"].set(not next_row["curve"].get())
+        self.regrid_rows()
+        text = next_row[field].get().strip()
+        next_row[field].delete(0,tk.END)
+        next_row[field].insert(0,text)
+        return "break"
+
+    def focus_prev_field_in_row(self, row_id, field):
+        field_order = [
+            "deg", "min", "sec",
+            "distance", "radius", "arc",
+            "rb_deg", "rb_min", "rb_sec"
+        ]
+        current_index = next((i for i, row in enumerate(self.rows) if row["id"] == row_id), None)
+        if current_index is None:
+            return
+
+        try:
+            idx = field_order.index(field)
+        except ValueError:
+            return
+
+        for prev_idx in range(idx - 1, -1, -1):
+            prev_field = field_order[prev_idx]
+            if prev_field in self.rows[current_index] and self.rows[current_index][prev_field].winfo_viewable():
+                self.rows[current_index][prev_field].focus_set()
+                break
+
+
     def focus_next_row_field(self, index, field):
         cur_row = 0
         for i in self.rows:
@@ -132,8 +194,20 @@ class ClosureCalc(tk.Tk):
                 next_widget = next_row[field]
                 next_widget.focus_set()
             else:
-                next_widget = next_row["deg"]
+                next_widget = next_row["sec"]
                 next_widget.focus_set()
+
+    def focus_next_row_field_return(self, index, field):
+        cur_row = 0
+        for i in self.rows:
+            if i["id"]==index:
+                break
+            cur_row +=1
+        next_index = cur_row + 1
+        if next_index < len(self.rows):
+            next_row = self.rows[next_index]
+            next_widget = next_row["deg"]
+            next_widget.focus_set()
 
     def focus_prev_row_field(self, index, field):
         cur_row = 0
@@ -148,7 +222,7 @@ class ClosureCalc(tk.Tk):
                 next_widget = prev_row[field]
                 next_widget.focus_set()
             else:
-                next_widget = prev_row["deg"]
+                next_widget = prev_row["sec"]
                 next_widget.focus_set()
 
     def save_closure(self):
