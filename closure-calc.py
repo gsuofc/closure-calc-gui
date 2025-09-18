@@ -89,11 +89,11 @@ class ClosureCalc(tk.Tk):
         for field in fields:
             row_widgets[field] = tk.Entry(self.scrollable_frame, width=10)
             row_widgets[field].bind("<FocusOut>", lambda e, r=row_widgets: self.on_entry_edit(r))
-            row_widgets[field].bind("<Down>", lambda e, f=field, i=rid: self.focus_next_row_field(i, f))
-            row_widgets[field].bind("<Up>", lambda e, f=field, i=self.row_id: self.focus_prev_row_field(i, f))
+            row_widgets[field].bind("<Shift-Down>", lambda e, f=field, i=rid: self.focus_next_row_field(i, f))
+            row_widgets[field].bind("<Shift-Up>", lambda e, f=field, i=self.row_id: self.focus_prev_row_field(i, f))
             row_widgets[field].bind("<Return>", lambda e, f=field, i=rid: self.focus_next_row_field_return(i, f))
-            row_widgets[field].bind("<Left>", lambda e, f=field, i=rid: self.focus_prev_field_in_row(i, f))
-            row_widgets[field].bind("<Right>", lambda e, f=field, i=rid: self.focus_next_field_in_row(i, f))
+            row_widgets[field].bind("<Shift-Left>", lambda e, f=field, i=rid: self.focus_prev_field_in_row(i, f))
+            row_widgets[field].bind("<Shift-Right>", lambda e, f=field, i=rid: self.focus_next_field_in_row(i, f))
             row_widgets[field].bind("<space>", lambda e, f=field, i=rid: self.toggle_curve(i, f))
 
         def make_insert_callback(index):
@@ -179,7 +179,6 @@ class ClosureCalc(tk.Tk):
             if prev_field in self.rows[current_index] and self.rows[current_index][prev_field].winfo_viewable():
                 self.rows[current_index][prev_field].focus_set()
                 break
-
 
     def focus_next_row_field(self, index, field):
         cur_row = 0
