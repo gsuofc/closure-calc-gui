@@ -4,6 +4,7 @@ import turtle
 import json
 from tkinter import filedialog
 from tkinter import messagebox as mb
+from tkinter import simpledialog
 
 class ClosureCalc(tk.Tk):
     def on_close(self):
@@ -18,6 +19,8 @@ class ClosureCalc(tk.Tk):
         self.geometry("800x900")
         self.protocol("WM_DELETE_WINDOW", self.on_close)
 
+        self.direct_points = []
+
         container = tk.Frame(self)
         container.pack(side="top",fill="both", expand=True)
 
@@ -25,10 +28,16 @@ class ClosureCalc(tk.Tk):
         container2.pack(side="bottom")
 
         save_button = tk.Button(container2,text="Save",command=self.save_closure)
-        save_button.pack(side="left")
+        save_button.grid(row=0, column=0)
 
         load_button = tk.Button(container2,text="Load",command =self.load_closure)
-        load_button.pack(side="right")
+        load_button.grid(row=0, column=1)
+        
+        load_button = tk.Button(container2,text="Generate Report",command =self.gen_report)
+        load_button.grid(row=0, column=2)
+
+        load_button = tk.Button(container2,text="Export as CSV",command =self.save_csv)
+        load_button.grid(row=0, column=3)
 
         canvas = tk.Canvas(container)
         scrollbar = tk.Scrollbar(container, orient="vertical", command=canvas.yview)
@@ -224,6 +233,45 @@ class ClosureCalc(tk.Tk):
                 next_widget = prev_row["sec"]
                 next_widget.focus_set()
 
+    def gen_report(self):
+        file_path = filedialog.asksaveasfilename(
+            defaultextension=".txt",
+            filetypes=[("TXT files", "*.csv"), ("All files", "*.*")],
+            title="Save TXT File"
+        )
+
+        if file_path:
+            
+            print(f"Data saved to {file_path}")
+
+    def save_csv(self):
+        if self.currently_drawing:
+            return
+        
+        easting = simpledialog.askfloat("Origin", "Easting of origin?", parent=self)
+
+        if not easting:
+            return
+
+        northing = simpledialog.askfloat("Origin", "Northing of origin?", parent=self)
+        
+        if not northing: 
+            return
+
+        file_path = filedialog.asksaveasfilename(
+            defaultextension=".csv",
+            filetypes=[("CSV files", "*.csv"), ("All files", "*.*")],
+            title="Save CSV File"
+        )
+
+        if file_path:
+            f = open(file_path,"w")
+            index = 1
+            for i in self.direct_points:
+                f.write("%f,%f,0\n"%(i['y']+easting,i['x']+northing))
+                index+=1
+            print(f"Data saved to {file_path}")
+
     def save_closure(self):
         # Takes the values in all the inputs and saves them to a JSON file
         # The first step is to create an array and store all the rows as dicts
@@ -393,8 +441,11 @@ class ClosureCalc(tk.Tk):
             return
         self.currently_drawing = True
         self.distances = []
+        self.direct_points = []
         x=0
         y=0
+        prevx=0
+        prevy=0
         bearing=0
         distance = 0
 
@@ -543,6 +594,16 @@ class ClosureCalc(tk.Tk):
 
             while bearing<0:
                 bearing+=math.radians(360)
+
+            if prevx!=x or prevy!=y:
+                coords = {
+                    'x': x,
+                    'y': y
+                }
+                self.direct_points.append(coords)
+
+            prevx=x
+            prevy=y
 
         dist = math.sqrt(x**2+y**2)
 
