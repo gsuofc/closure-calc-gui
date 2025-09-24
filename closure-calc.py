@@ -5,6 +5,7 @@ import json
 from tkinter import filedialog
 from tkinter import messagebox as mb
 from tkinter import simpledialog
+from datetime import datetime
 
 class ClosureCalc(tk.Tk):
     def on_close(self):
@@ -70,6 +71,8 @@ class ClosureCalc(tk.Tk):
         self.rows = []
         for i in range(1,10):
             self.add_row()
+
+        self.closure_stats = []
 
 
     def add_row(self, index=None):
@@ -234,14 +237,45 @@ class ClosureCalc(tk.Tk):
                 next_widget.focus_set()
 
     def gen_report(self):
+        if self.currently_drawing:
+            return
+        
+        if not self.closure_stats:
+            return
+        
+        report_name = simpledialog.askstring("Name", "Enter the name of the closure for the report:", parent=self)
+
+        if not report_name:
+            report_name = "N/A"
+
         file_path = filedialog.asksaveasfilename(
             defaultextension=".txt",
-            filetypes=[("TXT files", "*.csv"), ("All files", "*.*")],
+            filetypes=[("TXT files", "*.txt"), ("All files", "*.*")],
             title="Save TXT File"
         )
 
         if file_path:
-            
+            f = open(file_path,"w")
+            f.write("Closure Report for %s\n"%report_name)
+            f.write("Closure: 1/%.0f\n"%self.closure_stats["closure"])
+            f.write("Sum of distances of lines: %.3f\n"%self.closure_stats["distance"])
+            f.write("Displacement of final point: %.3f\n"%self.closure_stats["displacement"])
+            f.write("Coordinates of final point: (%.3f,%.3f)\n"%(self.closure_stats["x"],self.closure_stats["y"]))
+            f.write("Date of report: %s\n"%datetime.today().strftime('%Y-%m-%d'))
+            for i in self.direct_points:
+                if i['is_curve']:
+                    curve = i['curve_segment']
+                    f.write("\nCurve Segment:\n")
+                    f.write("Radius of Curve Segment: %.3f\n"%curve["radius"])
+                    f.write("Length of Curve Segment: %.3f\n"%curve["arc"])
+                else:
+                    line = i['line_segment']
+                    f.write("\nLine Segment:\n")
+                    f.write("Distance of Line Segment: %.3f\n"%line["distance"])
+                    f.write("Bearing of Line Segment: %.0f-%.0f-%.3f\n"%(line["bearing-d"],line["bearing-m"],line["bearing-s"]))
+                f.write("Coordinates of point after segment: (%f,%f)\n"%(i['y'],i['x']))
+            f.write("\n---Report Version 1---")
+            f.close()
             print(f"Data saved to {file_path}")
 
     def save_csv(self):
@@ -270,6 +304,7 @@ class ClosureCalc(tk.Tk):
             for i in self.direct_points:
                 f.write("%f,%f,0\n"%(i['y']+easting,i['x']+northing))
                 index+=1
+            f.close()
             print(f"Data saved to {file_path}")
 
     def save_closure(self):
@@ -471,6 +506,9 @@ class ClosureCalc(tk.Tk):
         self.tscreen.tracer(0)  # Turn off automatic screen updates
 
         for row_widgets in self.rows:
+            line_segment = {}
+            curve_segment = {}
+
             is_curve = row_widgets["curve"].get()
             # Calculation depends on if the segment is a curve or a straight line
             if is_curve:
@@ -512,6 +550,9 @@ class ClosureCalc(tk.Tk):
 
                     bearing = bearing_new
                     distance+=abs(radius*math.radians(dd))
+
+                    curve_segment["radius"] = radius
+                    curve_segment["arc"] = radius*math.radians(dd)
                 elif radius!=0 and self.is_number(a):
                     #if the arc length is given, convert to interior angle and then compute from that
                     rad = float(a)/radius
@@ -524,6 +565,9 @@ class ClosureCalc(tk.Tk):
 
                     bearing = bearing_new
                     distance+=abs(float(a))
+
+                    curve_segment["radius"] = radius
+                    curve_segment["arc"] = float(a)
 
             else:
                 # A straight line just uses the direct problem
@@ -543,6 +587,7 @@ class ClosureCalc(tk.Tk):
                         b += float(s)/(60*60)
 
                         bearing = math.radians(b)
+                    
 
                     (dx,dy,bearing_new) = self.compute_dxdy_from_straightline(bearing,float(di))
 
@@ -558,6 +603,18 @@ class ClosureCalc(tk.Tk):
                         bearing+=math.radians(180)
 
                     distance+=abs(float(di))
+
+                    line_segment["distance"] = abs(float(di))
+                    b_degrees = bearing*180/math.pi
+                    b_d = math.floor(b_degrees)
+                    b_min = (b_degrees-b_d)*60
+                    b_m = math.floor(b_min)
+                    b_s = (b_min-b_m)*60
+                    line_segment["bearing-d"] = float(b_d)
+                    line_segment["bearing-m"] = float(b_m)
+                    line_segment["bearing-s"] = float(b_s)
+
+                        
             # Update bounds of screen
             if x < minx:
                 minx = x
@@ -598,14 +655,20 @@ class ClosureCalc(tk.Tk):
             if prevx!=x or prevy!=y:
                 coords = {
                     'x': x,
-                    'y': y
+                    'y': y,
+                    'is_curve': is_curve
                 }
+                if is_curve:
+                    coords["curve_segment"] = curve_segment
+                else:
+                    coords["line_segment"] = line_segment
                 self.direct_points.append(coords)
 
             prevx=x
             prevy=y
 
         dist = math.sqrt(x**2+y**2)
+        # dist = final displacement, distance = sum of lengths of the segments
 
         closure = float('inf')      
         # To avoid a /0 error, only divide if dist is not equal to 0. (closure is listed as 1/n and a perfect closure means 1/0)
@@ -624,6 +687,14 @@ class ClosureCalc(tk.Tk):
 
         t.color("black")
         t.write("Closure: 1/%.0f \nd:%.3f di: %.3f\n(x: %.3f, y: %.3f)\nBearing: %d-%d-%.3f"%(closure,dist,distance,x,y,b_d,b_m,b_s))
+
+        self.closure_stats = {
+            "closure":closure,
+            "displacement":dist,
+            "distance":distance,
+            "x":x,
+            "y":y,
+        }
 
         self.tscreen.update()  # Turn off automatic screen updates
 
