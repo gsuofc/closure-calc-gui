@@ -524,9 +524,7 @@ class ClosureCalc(tk.Tk):
 
                 if self.is_number(rd) and self.is_number(rm) and self.is_number(rs):
                     # If a radial bearing is given, change the current bearing to that (otherwise use the last bearing as the starting bearing)
-                    b = float(rd)
-                    b += float(rm)/60
-                    b += float(rs)/(60*60)
+                    b = self.compute_dd_from_dms(float(rd),float(rm),float(rs))
                     b-=90
                     bearing = math.radians(b)
 
@@ -535,9 +533,7 @@ class ClosureCalc(tk.Tk):
 
                 if self.is_number(d) and self.is_number(m) and self.is_number(s) and radius!=0:
                     # If interior angle is given, compute the curve from that
-                    dd = float(d)
-                    dd += float(m)/60
-                    dd += float(s)/(60*60)
+                    dd = self.compute_dd_from_dms(float(d),float(m),float(s))
                     if radius<0:
                         dd*=-1
 
@@ -582,13 +578,9 @@ class ClosureCalc(tk.Tk):
                 if self.is_number(di):
                     # If a new bearing is given, use that as the bearing. Otherwise reuse the last bearing
                     if self.is_number(d) and self.is_number(m) and self.is_number(s): 
-                        b = float(d)
-                        b += float(m)/60
-                        b += float(s)/(60*60)
-
+                        b = self.compute_dd_from_dms(float(d),float(m),float(s))
                         bearing = math.radians(b)
                     
-
                     (dx,dy,bearing_new) = self.compute_dxdy_from_straightline(bearing,float(di))
 
                     t.seth((90-math.degrees(bearing_new))%360)
@@ -606,10 +598,7 @@ class ClosureCalc(tk.Tk):
 
                     line_segment["distance"] = abs(float(di))
                     b_degrees = bearing*180/math.pi
-                    b_d = math.floor(b_degrees)
-                    b_min = (b_degrees-b_d)*60
-                    b_m = math.floor(b_min)
-                    b_s = (b_min-b_m)*60
+                    (b_d, b_m, b_s) = self.compute_dms_from_dd(b_degrees)
                     line_segment["bearing-d"] = float(b_d)
                     line_segment["bearing-m"] = float(b_m)
                     line_segment["bearing-s"] = float(b_s)
@@ -680,10 +669,7 @@ class ClosureCalc(tk.Tk):
 
         b_degrees = bearing*180/math.pi
 
-        b_d = math.floor(b_degrees)
-        b_min = (b_degrees-b_d)*60
-        b_m = math.floor(b_min)
-        b_s = (b_min-b_m)*60
+        (b_d, b_m, b_s) = self.compute_dms_from_dd(b_degrees)
 
         t.color("black")
         t.write("Closure: 1/%.0f \nd:%.3f di: %.3f\n(x: %.3f, y: %.3f)\nBearing: %d-%d-%.3f"%(closure,dist,distance,x,y,b_d,b_m,b_s))
@@ -727,6 +713,20 @@ class ClosureCalc(tk.Tk):
         dy = dist*math.sin(rad)
 
         return (dx,dy)
+    
+    def compute_dms_from_dd(self,dd):
+        b_d = math.floor(dd)
+        b_min = (dd-b_d)*60
+        b_m = math.floor(b_min)
+        b_s = (b_min-b_m)*60
+        return (b_d, b_m, b_s)
+    
+    def compute_dd_from_dms(self,d,m,s):
+        #TODO: Check for negative DMS
+        dd = d
+        dd += m/60
+        dd += s/(60*60)
+        return dd
     
 
 
