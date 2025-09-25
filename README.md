@@ -1,5 +1,5 @@
 # Closure Calc Gui
-Calculate the closure for a survey/CAD plan using a series of line segments
+Calculate the closure for a survey plan using a series of line segments
 
 ![Closure Calc GUI Screenshot, with grid of inputs on the left and visual diagram on the right](https://github.com/gsuofc/closure-calc-gui/blob/main/screenshot.png?raw=true)
 
@@ -10,9 +10,18 @@ This program requires Python 3, turtle, and tkinter to be installed in order to 
   - Distance
 - Curve:
   - Delta (Deg,Min,Sec)
-  - Arc Length (Used if no delta is given)
+  - Arc Length
   - Radius
   - Radial Bearing (Optional)
+ 
+##### Field Properties:
+Specific functionality will occur when fields are formatted as follows:
+- Line Bearing left blank: Re-uses final bearing from previous segment
+- Distance with negative value: Adds 180 degrees to the bearing
+- Delta left blank: Computes curve using Arc Length, rather than delta
+- Radius left blank: Re-uses radius from previous segment
+- Radius with negative value: Curves clockwise rather than counter-clockwise
+- Radial Bearing left blank: Re-uses final bearing from previous segment
  
 ### Keyboard Controls:
 Shift + Arrow Keys: Move selected text box
