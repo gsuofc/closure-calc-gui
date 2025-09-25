@@ -25,15 +25,22 @@ Specific functionality will occur when fields are formatted as follows:
  
 ### Keyboard Controls:
 Shift + Arrow Keys: Move selected text box
+
 Space: Toggle Curve
+
 Return: Go to next row, first column
+
 Tab: Go to next column
+
 Shift+Tab: Go to previous column
 
 ### Other Features
 Save: Saves the current set of segments to file (JSON)
+
 Load: Loads a set of segments from file (JSON)
+
 Generate Report: Creates a report with information on the closure, and the list of segments (TXT)
+
 Export as CSV: Creates a ENU formatted CSV file for use in CAD
 
 ### Licensing
