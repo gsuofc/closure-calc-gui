@@ -246,12 +246,13 @@ class ClosureCalc(tk.Tk):
         report_name = simpledialog.askstring("Name", "Enter the name of the closure for the report:", parent=self)
 
         if not report_name:
-            report_name = "N/A"
+            report_name = "Untitled"
 
         file_path = filedialog.asksaveasfilename(
             defaultextension=".txt",
             filetypes=[("TXT files", "*.txt"), ("All files", "*.*")],
-            title="Save TXT File"
+            title="Save TXT File",
+            initialfile=report_name
         )
 
         if file_path:
@@ -262,19 +263,25 @@ class ClosureCalc(tk.Tk):
             f.write("Displacement of final point: %.3f\n"%self.closure_stats["displacement"])
             f.write("Coordinates of final point: (%.3f,%.3f)\n"%(self.closure_stats["x"],self.closure_stats["y"]))
             f.write("Date of report: %s\n"%datetime.today().strftime('%Y-%m-%d'))
+            seg_count = 1
             for i in self.direct_points:
                 if i['is_curve']:
                     curve = i['curve_segment']
-                    f.write("\nCurve Segment:\n")
+                    f.write("\nCurve Segment %i:\n"%seg_count)
                     f.write("Radius of Curve Segment: %.3f\n"%curve["radius"])
                     f.write("Length of Curve Segment: %.3f\n"%curve["arc"])
+                    (d,m,s) = self.compute_dms_from_dd(abs(math.degrees(curve["arc"]/curve["radius"])))
+                    f.write("Delta of Curve Segment: %.0f-%.0f-%.3f\n"%(d,m,s))
+                    if curve["rad-bear"]:
+                        f.write("Radial Bearing of Curve Segment: %.0f-%.0f-%.3f\n"%(curve["rad-d"],curve["rad-m"],curve["rad-s"]))
                 else:
                     line = i['line_segment']
-                    f.write("\nLine Segment:\n")
+                    f.write("\nLine Segment %i:\n"%seg_count)
                     f.write("Distance of Line Segment: %.3f\n"%line["distance"])
                     f.write("Bearing of Line Segment: %.0f-%.0f-%.3f\n"%(line["bearing-d"],line["bearing-m"],line["bearing-s"]))
                 f.write("Coordinates of point after segment: (%f,%f)\n"%(i['y'],i['x']))
-            f.write("\n---Report Version 1---")
+                seg_count+=1
+            f.write("\n---Report Version 2---")
             f.close()
             print(f"Data saved to {file_path}")
 
@@ -522,11 +529,17 @@ class ClosureCalc(tk.Tk):
                 rm = row_widgets["rb_min"].get()
                 rs = row_widgets["rb_sec"].get()
 
+                curve_segment["rad-bear"] = False
+
                 if self.is_number(rd) and self.is_number(rm) and self.is_number(rs):
                     # If a radial bearing is given, change the current bearing to that (otherwise use the last bearing as the starting bearing)
                     b = self.compute_dd_from_dms(float(rd),float(rm),float(rs))
                     b-=90
                     bearing = math.radians(b)
+                    curve_segment["rad-bear"] = True
+                    curve_segment["rad-d"] = float(rd)
+                    curve_segment["rad-m"] = float(rm)
+                    curve_segment["rad-s"] = float(rs)
 
                 if self.is_number(r):
                     radius = float(r)
