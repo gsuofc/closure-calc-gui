@@ -23,7 +23,7 @@ class ClosureCalc(tk.Tk):
 
         self.tscreen = turtle.Screen()
         self.title("Plan Closure Calculator - %s"%__git_hash__)
-        self.geometry("800x900")
+        self.geometry("1000x900")
         self.protocol("WM_DELETE_WINDOW", self.on_close)
 
         self.direct_points = []
