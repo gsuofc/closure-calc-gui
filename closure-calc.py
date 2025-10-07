@@ -7,6 +7,16 @@ from tkinter import messagebox as mb
 from tkinter import simpledialog
 from datetime import datetime
 
+import sys
+import os
+
+def is_frozen():
+    return getattr(sys, 'frozen', False)
+
+if not is_frozen():
+    import gen_version_number
+    gen_version_number.gen_version_info()
+
 class ClosureCalc(tk.Tk):
     def on_close(self):
         self.quit()
@@ -21,8 +31,14 @@ class ClosureCalc(tk.Tk):
         except ImportError:
             __git_hash__ = "***version info unavalible***"
 
+        build_text = __git_hash__
+        if is_frozen():
+            build_text+=" (running as executable)"
+        else:
+            build_text+=" (running as script)"
+
         self.tscreen = turtle.Screen()
-        self.title("Plan Closure Calculator - %s"%__git_hash__)
+        self.title("Plan Closure Calculator - %s"%build_text)
         self.geometry("1000x900")
         self.protocol("WM_DELETE_WINDOW", self.on_close)
 
