@@ -44,7 +44,7 @@ Generate Report: Creates a report with information on the closure, and the list 
 Export as CSV: Creates a ENU formatted CSV file for use in CAD
 
 ### Building and Running
-`closure-calc.py` can be run using `python colosure-calc.py`. Alternatively, this program can be built using PyInstaller by performing the following
+`closure-calc.py` can be run using `python closure-calc.py`. Alternatively, this program can be built using PyInstaller by performing the following
 
 ```
 python gen_version_number.py
