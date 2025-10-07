@@ -15,8 +15,14 @@ class ClosureCalc(tk.Tk):
     def __init__(self):
         # Init the GUI
         super().__init__()
+
+        try:
+            from version_info import __git_hash__
+        except ImportError:
+            __git_hash__ = "***version info unavalible***"
+
         self.tscreen = turtle.Screen()
-        self.title("Plan Closure Calculator")
+        self.title("Plan Closure Calculator - %s"%__git_hash__)
         self.geometry("800x900")
         self.protocol("WM_DELETE_WINDOW", self.on_close)
 
