@@ -1,5 +1,7 @@
 # Closure Calc Gui
 Calculate the closure for a survey plan using a series of line segments
+### Download
+Download the lastest stable build from the [releases](https://github.com/gsuofc/closure-calc-gui/releases) page, or the latest committed build from [the actions tab](https://github.com/gsuofc/closure-calc-gui/actions).
 
 ![Closure Calc GUI Screenshot, with grid of inputs on the left and visual diagram on the right](https://github.com/gsuofc/closure-calc-gui/blob/main/screenshot.png?raw=true)
 
@@ -52,8 +54,6 @@ python -m PyInstaller --onefile -w closure-calc.py
 ```
 
 A .bat file `build.bat` has been included to automate this process
-
-Builds can also be found in the [releases](https://github.com/gsuofc/closure-calc-gui/releases) page.
 
 ### Licensing
 This code is licensed under [public domain](https://github.com/gsuofc/closure-calc-gui?tab=CC0-1.0-1-ov-file). You are permitted to use this code for any reason, without restriction. 
