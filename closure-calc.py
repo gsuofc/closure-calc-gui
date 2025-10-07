@@ -44,7 +44,7 @@ class ClosureCalc(tk.Tk):
 
         turtle_root = self.tscreen.getcanvas().winfo_toplevel()
         turtle_root.protocol("WM_DELETE_WINDOW", self.on_close)
-        turtle_root.title("Plan View")
+        turtle_root.title("Plan View - %s"%build_text)
 
         self.direct_points = []
 
@@ -99,6 +99,19 @@ class ClosureCalc(tk.Tk):
             self.add_row()
 
         self.closure_stats = []
+
+        self.turtle_main = turtle.Turtle()
+        self.turtle_dots = turtle.Turtle()
+
+        self.turtle_main.pensize(2)
+        self.turtle_main.color("blue")
+        self.turtle_main.speed(0)
+
+        self.turtle_dots.pensize(5)
+        self.turtle_dots.color("red")
+        self.turtle_dots.speed(0)
+        self.turtle_dots.penup()
+
 
 
     def add_row(self, index=None):
@@ -414,8 +427,6 @@ class ClosureCalc(tk.Tk):
 
             self.regrid_rows()
             self.compute_closure()
-            self.compute_closure()
-
 
     def _on_mousewheel(self, event):
         # On Windows and Mac, event.delta is multiples of 120
@@ -526,8 +537,16 @@ class ClosureCalc(tk.Tk):
         
         # Reset turtle
         turtle.clearscreen()
-        t = turtle.Turtle()
-        t2 = turtle.Turtle()
+        self.turtle_main.clear()
+        self.turtle_dots.clear()
+        self.turtle_main.penup()
+        self.turtle_main.goto(0, 0)
+        self.turtle_main.setheading(0)
+        self.turtle_main.pendown()
+        self.turtle_dots.penup()
+
+        t = self.turtle_main
+        t2 = self.turtle_dots #TODO: refactor this properly
         t.pensize(2)
         t.color("blue")
         t.speed(0)
