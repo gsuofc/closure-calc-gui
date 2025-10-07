@@ -59,10 +59,10 @@ jobs:
         run: python gen_version_number.py
 
       - name: Build with PyInstaller (macOS)
-        run: pyinstaller --onefile -w closure-calc.py
+        run: pyinstaller -w closure-calc.py
 
-      - name: Upload macOS binary
+      - name: Upload macOS .app
         uses: actions/upload-artifact@v4
         with:
-          name: closure-calc-macos
-          path: dist/closure-calc
+          name: closure-calc-macos-app
+          path: dist/closure-calc.app
