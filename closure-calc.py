@@ -42,6 +42,10 @@ class ClosureCalc(tk.Tk):
         self.geometry("1000x900")
         self.protocol("WM_DELETE_WINDOW", self.on_close)
 
+        turtle_root = self.tscreen.getcanvas().winfo_toplevel()
+        turtle_root.protocol("WM_DELETE_WINDOW", self.on_close)
+        turtle_root.title("Plan View")
+
         self.direct_points = []
 
         container = tk.Frame(self)
