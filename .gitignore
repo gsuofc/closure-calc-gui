@@ -3,3 +3,4 @@
 closure-calc.spec
 version_info.py
 /__pycache__
+.DS_Store
