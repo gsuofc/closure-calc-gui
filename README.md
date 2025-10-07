@@ -43,5 +43,17 @@ Generate Report: Creates a report with information on the closure, and the list 
 
 Export as CSV: Creates a ENU formatted CSV file for use in CAD
 
+### Building and Running
+`closure-calc.py` can be run using `python colosure-calc.py`. Alternatively, this program can be built using PyInstaller by performing the following
+
+```
+python gen_version_number.py
+python -m PyInstaller --onefile -w closure-calc.py
+```
+
+A .bat file `build.bat` has been included to automate this process
+
+Builds can also be found in the [releases](https://github.com/gsuofc/closure-calc-gui/releases) page.
+
 ### Licensing
 This code is licensed under [public domain](https://github.com/gsuofc/closure-calc-gui?tab=CC0-1.0-1-ov-file). You are permitted to use this code for any reason, without restriction. 
