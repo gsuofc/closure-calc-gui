@@ -2,7 +2,7 @@ import subprocess
 
 def get_git_hash():
     try:
-        git_hash = subprocess.check_output(['git', 'describe', '--tags']).strip().decode('utf-8')
+        git_hash = subprocess.check_output(['git', 'describe', '--tags', '--abbrev=99']).strip().decode('utf-8')
 
         status_output = subprocess.check_output(['git', 'status', '--porcelain']).decode('utf-8')
         if status_output.strip():
