@@ -143,6 +143,8 @@ class ClosureCalc(tk.Tk):
             row_widgets[field].bind("<FocusOut>", lambda e, r=row_widgets: self.on_entry_edit(r))
             row_widgets[field].bind("<Shift-Down>", lambda e, f=field, i=rid: self.focus_next_row_field(i, f))
             row_widgets[field].bind("<Shift-Up>", lambda e, f=field, i=self.row_id: self.focus_prev_row_field(i, f))
+            row_widgets[field].bind("<Down>", lambda e, f=field, i=rid: self.focus_next_row_field(i, f))
+            row_widgets[field].bind("<Up>", lambda e, f=field, i=self.row_id: self.focus_prev_row_field(i, f))
             row_widgets[field].bind("<Return>", lambda e, f=field, i=rid: self.focus_next_row_field_return(i, f))
             row_widgets[field].bind("<Shift-Left>", lambda e, f=field, i=rid: self.focus_prev_field_in_row(i, f))
             row_widgets[field].bind("<Shift-Right>", lambda e, f=field, i=rid: self.focus_next_field_in_row(i, f))
