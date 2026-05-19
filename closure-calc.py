@@ -12,7 +12,7 @@ import os
 
 FILE_PROG_MAGIC = "GS_CLOSURE_CALC_GUI"
 
-REPORT_VERSION = 2
+REPORT_VERSION = 3
 FILE_VERSION = 1 # Prior to 1.3, files did not have any headers. 
 MIN_FILE_VERSION = 1
 
@@ -324,6 +324,7 @@ class ClosureCalc(tk.Tk):
                     f.write("Delta of Curve Segment: %.0f-%.0f-%.3f\n"%(d,m,s))
                     if curve["rad-bear"]:
                         f.write("Radial Bearing of Curve Segment: %.0f-%.0f-%.3f\n"%(curve["rad-d"],curve["rad-m"],curve["rad-s"]))
+                    f.write("Bearing after Curve Segment: %.0f-%.0f-%.3f\n"%(curve["bearing-d"],curve["bearing-m"],curve["bearing-s"]))
                 else:
                     line = i['line_segment']
                     f.write("\nLine Segment %i:\n"%seg_count)
@@ -681,6 +682,13 @@ class ClosureCalc(tk.Tk):
 
                     curve_segment["radius"] = radius
                     curve_segment["arc"] = float(a)
+                
+                # Save bearing after curve for file saving/drawing
+                b_degrees = bearing*180/math.pi
+                (b_d, b_m, b_s) = self.compute_dms_from_dd(b_degrees)
+                curve_segment["bearing-d"] = float(b_d)
+                curve_segment["bearing-m"] = float(b_m)
+                curve_segment["bearing-s"] = float(b_s)
 
             else:
                 # A straight line just uses the direct problem
@@ -713,6 +721,7 @@ class ClosureCalc(tk.Tk):
 
                     distance+=abs(float(di))
 
+                    # Save distance and bearing to file to save/display
                     line_segment["distance"] = abs(float(di))
                     b_degrees = bearing*180/math.pi
                     (b_d, b_m, b_s) = self.compute_dms_from_dd(b_degrees)
