@@ -157,18 +157,21 @@ class ClosureCalc(tk.Tk):
     
     def _check_for_updates_thread(self):
         if __git_raw_hash__ is not None:
-            if is_newer_version(__git_raw_hash__):
-                newest_version = get_latest_version_number()
-                self.after(
-                    0,
-                    lambda: self.update_is_detected(newest_version)
-                )
+            try:
+                if is_newer_version(__git_raw_hash__):
+                    newest_version = get_latest_version_number()
+                    self.after(
+                        0,
+                        lambda: self.update_is_detected(newest_version)
+                    )
+            except:
+                print("Error checking for updates. Is Github Down, or are you connected to the internet?")
     def update_is_detected(self,newest_version):
         mb.showinfo(
             "Update Avalible", 
-            f"There is a newer version {newest_version}.\nYou currently have {__git_hash__}\nUpdate at https://github.com/gsuofc/closure-calc-gui/releases"
+            f"There is a newer version ({newest_version}) available.\nYou currently have {__git_hash__}.\nClick 'Update Now' or go to https://github.com/gsuofc/closure-calc-gui/releases"
         )
-        self.update_button.grid(row=0, column=4)
+        self.update_button.grid(row=0, column=99)
         
 
     def update_redirect(self):
