@@ -898,6 +898,8 @@ class ClosureCalc(tk.Tk):
         self.last_x =  event.x
         self.last_y = event.y
 
+        return "break" # Do this to still allow focus to be set
+
     def pan_move(self,event):
         canvas = self.tscreen.getcanvas()
 
