@@ -88,6 +88,9 @@ class ClosureCalc(tk.Tk):
         load_button = tk.Button(container2,text="Export as CSV",command =self.save_csv)
         load_button.grid(row=0, column=3)
 
+        self.update_button = tk.Button(container2,text="Update Now!",command =self.update_redirect)
+        #self.update_button.grid(row=0, column=4) Will be put in the update function! (make sure column is matched)
+
         canvas = tk.Canvas(container)
         scrollbar = tk.Scrollbar(container, orient="vertical", command=canvas.yview)
         self.scrollable_frame = tk.Frame(canvas)
@@ -146,11 +149,18 @@ class ClosureCalc(tk.Tk):
                 newest_version = get_latest_version_number()
                 self.after(
                     0,
-                    lambda: mb.showinfo(
-                        "Update Avalible", 
-                        f"There is a newer version {newest_version}.\nYou currently have {__git_hash__}\nUpdate at https://github.com/gsuofc/closure-calc-gui/releases"
-                    )
+                    lambda: self.update_is_detected(newest_version)
                 )
+    def update_is_detected(self,newest_version):
+        mb.showinfo(
+            "Update Avalible", 
+            f"There is a newer version {newest_version}.\nYou currently have {__git_hash__}\nUpdate at https://github.com/gsuofc/closure-calc-gui/releases"
+        )
+        self.update_button.grid(row=0, column=4)
+        
+
+    def update_redirect(self):
+        os.startfile("https://github.com/gsuofc/closure-calc-gui/releases/latest")
 
     def add_row(self, index=None):
         if index is None:
