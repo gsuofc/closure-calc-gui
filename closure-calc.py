@@ -93,12 +93,15 @@ class ClosureCalc(tk.Tk):
 
         load_button = tk.Button(container2,text="Load",command =self.load_closure)
         load_button.grid(row=0, column=1)
+
+        load_button = tk.Button(container2,text="Clear",command =self.clear_closure)
+        load_button.grid(row=0, column=2)
         
         load_button = tk.Button(container2,text="Generate Report",command =self.gen_report)
-        load_button.grid(row=0, column=2)
+        load_button.grid(row=0, column=3)
 
         load_button = tk.Button(container2,text="Export as CSV",command =self.save_csv)
-        load_button.grid(row=0, column=3)
+        load_button.grid(row=0, column=4)
 
         self.update_button = tk.Button(container2,text="Update Now!",command =self.update_redirect)
         #self.update_button.grid(row=0, column=4) Will be put in the update function! (make sure column is matched)
@@ -461,6 +464,21 @@ class ClosureCalc(tk.Tk):
             with open(file_path, 'w') as f:
                 json.dump(file, f, indent=4)
             print(f"Data saved to {file_path}")
+
+    def clear_closure(self):
+        answer = mb.askyesno("Clear all data?", "Do you want to clear all data? All unsaved changes will be lost.")
+        if answer:
+            for row in self.rows:
+                for widget in row.values():
+                    if isinstance(widget, tk.Entry):
+                        widget.destroy()
+                    elif isinstance(widget, tk.Checkbutton) or isinstance(widget, tk.Button):
+                        widget.destroy()
+            self.rows.clear()
+            for i in range(1,10):
+                self.add_row()
+            self.regrid_rows()
+            self.compute_closure()
 
     def load_closure(self):
         # Takes a json file saved before and fill back in the data 
