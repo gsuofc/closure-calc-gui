@@ -1,5 +1,5 @@
 @echo off
 cd /d "%~dp0"
 python gen_version_number.py
-python -m PyInstaller --onefile -w closure-calc.py --name "Closure Calculator" --icon=icon.ico --add-data "icon.ico;."
+python -m PyInstaller --onefile -w closure-calc.py --icon=icon.ico --add-data "icon.ico;."
 pause

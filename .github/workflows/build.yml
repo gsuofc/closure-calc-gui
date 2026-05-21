@@ -26,6 +26,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install pyinstaller
+          pip install PyGithub
 
       - name: Generate version number
         run: python gen_version_number.py
@@ -58,6 +59,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install pyinstaller
+          pip install PyGithub
 
       - name: Generate version number
         run: python gen_version_number.py
