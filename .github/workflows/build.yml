@@ -65,7 +65,7 @@ jobs:
         run: python gen_version_number.py
 
       - name: Build with PyInstaller (macOS)
-        run: pyinstaller -w closure-calc.py --add-data "icon.ico;."
+        run: pyinstaller -w closure-calc.py --add-data "icon.ico:."
 
       - name: Zip macOS .app
         run: |
