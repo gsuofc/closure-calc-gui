@@ -6,6 +6,8 @@ from tkinter import filedialog
 from tkinter import messagebox as mb
 from tkinter import simpledialog
 from datetime import datetime
+from version_checking import *
+import threading
 
 import sys
 import os
@@ -26,9 +28,10 @@ if not is_frozen():
     gen_version_number.gen_version_info()
 
 try:
-    from version_info import __git_hash__
+    from version_info import __git_hash__, __git_raw_hash__
 except ImportError:
     __git_hash__ = "***version info unavalible***"
+    __git_raw_hash__ = None
 
 class ClosureCalc(tk.Tk):
     def on_close(self):
@@ -131,7 +134,23 @@ class ClosureCalc(tk.Tk):
         self.turtle_dots.speed(0)
         self.turtle_dots.penup()
 
-
+        #Check for update
+        threading.Thread(
+            target=self._check_for_updates_thread,
+            daemon=True
+        ).start()
+    
+    def _check_for_updates_thread(self):
+        if __git_raw_hash__ is not None:
+            if is_newer_version(__git_raw_hash__):
+                newest_version = get_latest_version_number()
+                self.after(
+                    0,
+                    lambda: mb.showinfo(
+                        "Update Avalible", 
+                        f"There is a newer version {newest_version}.\nYou currently have {__git_hash__}\nUpdate at https://github.com/gsuofc/closure-calc-gui/releases"
+                    )
+                )
 
     def add_row(self, index=None):
         if index is None:

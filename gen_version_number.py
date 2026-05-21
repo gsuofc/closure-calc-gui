@@ -1,6 +1,6 @@
 import subprocess
 
-def get_git_hash():
+def get_version_tagged_desc():
     try:
         git_hash = subprocess.check_output(['git', 'describe', '--tags', '--abbrev=99']).strip().decode('utf-8')
 
@@ -11,11 +11,20 @@ def get_git_hash():
         return git_hash
     except subprocess.CalledProcessError:
         return "***untracked build***"
+    
+def get_git_hash():
+    try:
+        git_hash = subprocess.check_output(['git', 'rev-parse', 'HEAD']).strip().decode('utf-8')
+        return git_hash
+    except subprocess.CalledProcessError:
+        return None
 
 def gen_version_info():
-    current_git_hash = get_git_hash()
+    current_git_hash = get_version_tagged_desc()
+    raw_git_hash = get_git_hash()
     with open("version_info.py", "w") as f:
         f.write(f'__git_hash__ = "{current_git_hash}"\n')
+        f.write(f'__git_raw_hash__ = "{raw_git_hash}"\n')
     print("Succesfully generated git version! %s"%current_git_hash)
     
 if __name__ == "__main__":
