@@ -35,6 +35,11 @@ class ClosureCalc(tk.Tk):
         self.quit()
         self.destroy()
 
+    def rebind_turtle_controls(self,canvas):
+        canvas.bind("<MouseWheel>", self.zoom)
+        canvas.bind("<ButtonPress-1>", self.start_pan)
+        canvas.bind("<B1-Motion>", self.pan_move)
+
     def __init__(self):
         # Init the GUI
         super().__init__()
@@ -51,9 +56,14 @@ class ClosureCalc(tk.Tk):
         self.geometry("1000x900")
         self.protocol("WM_DELETE_WINDOW", self.on_close)
 
-        turtle_root = self.tscreen.getcanvas().winfo_toplevel()
+        turtle_canvas = self.tscreen.getcanvas()
+        turtle_root = turtle_canvas.winfo_toplevel()
+        self.rebind_turtle_controls(turtle_canvas)
         turtle_root.protocol("WM_DELETE_WINDOW", self.on_close)
         turtle_root.title("Plan View - %s"%build_text)
+
+        self.last_x = 0
+        self.last_y = 0
 
         self.direct_points = []
 
@@ -641,6 +651,7 @@ class ClosureCalc(tk.Tk):
                     b = self.compute_dd_from_dms(float(rd),float(rm),float(rs))
                     b-=90
                     bearing = math.radians(b)
+                    #Save radial bearing to file
                     curve_segment["rad-bear"] = True
                     curve_segment["rad-d"] = float(rd)
                     curve_segment["rad-m"] = float(rm)
@@ -743,7 +754,7 @@ class ClosureCalc(tk.Tk):
             # Compute ranges
             xrange = maxx - minx
             yrange = maxy - miny
-            padding = 1.1
+            padding = 1.4
 
             # Use the largest of the two ranges for a square view
             max_range = max(xrange, yrange) * padding
@@ -810,7 +821,35 @@ class ClosureCalc(tk.Tk):
 
         self.tscreen.update()  # Turn off automatic screen updates
 
+        self.rebind_turtle_controls(self.tscreen.getcanvas())
+
         self.currently_drawing = False
+
+    def zoom(self, event):
+        canvas = self.tscreen.getcanvas()
+        scale_factor = 1.1 if event.delta > 0 else 0.9
+        x = canvas.canvasx(event.x)
+        y = canvas.canvasy(event.y)
+        canvas.scale("all",x,y,scale_factor,scale_factor)
+
+    def start_pan(self,event):
+        self.last_x =  event.x
+        self.last_y = event.y
+
+    def pan_move(self,event):
+        canvas = self.tscreen.getcanvas()
+
+        x = event.x
+        y = event.y
+
+        dx = x - self.last_x
+        dy = y - self.last_y
+
+        canvas.move("all", dx, dy)
+
+        self.last_x = x
+        self.last_y = y
+
     
     def compute_dxdy_from_straightline(self,rads,di):
         # Using a distance and angle, compute the next set of coords (direct problem)
