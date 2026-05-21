@@ -33,6 +33,16 @@ except ImportError:
     __git_hash__ = "***version info unavalible***"
     __git_raw_hash__ = None
 
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
 class ClosureCalc(tk.Tk):
     def on_close(self):
         self.quit()
@@ -58,12 +68,14 @@ class ClosureCalc(tk.Tk):
         self.title("Plan Closure Calculator - %s"%build_text)
         self.geometry("1000x900")
         self.protocol("WM_DELETE_WINDOW", self.on_close)
+        self.iconbitmap(resource_path("icon.ico"))
 
         turtle_canvas = self.tscreen.getcanvas()
         turtle_root = turtle_canvas.winfo_toplevel()
         self.rebind_turtle_controls(turtle_canvas)
         turtle_root.protocol("WM_DELETE_WINDOW", self.on_close)
         turtle_root.title("Plan View - %s"%build_text)
+        turtle_root.iconbitmap(resource_path("icon.ico"))
 
         self.last_x = 0
         self.last_y = 0
