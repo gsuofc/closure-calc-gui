@@ -8,6 +8,8 @@ from tkinter import simpledialog
 from datetime import datetime
 from version_checking import *
 import threading
+import webbrowser
+import platform
 
 import sys
 import os
@@ -68,14 +70,16 @@ class ClosureCalc(tk.Tk):
         self.title("Plan Closure Calculator - %s"%build_text)
         self.geometry("1000x900")
         self.protocol("WM_DELETE_WINDOW", self.on_close)
-        self.iconbitmap(resource_path("icon.ico"))
 
         turtle_canvas = self.tscreen.getcanvas()
         turtle_root = turtle_canvas.winfo_toplevel()
         self.rebind_turtle_controls(turtle_canvas)
         turtle_root.protocol("WM_DELETE_WINDOW", self.on_close)
         turtle_root.title("Plan View - %s"%build_text)
-        turtle_root.iconbitmap(resource_path("icon.ico"))
+        
+        if platform.system() == "Windows":
+            self.iconbitmap(resource_path("icon.ico"))
+            turtle_root.iconbitmap(resource_path("icon.ico"))
 
         self.last_x = 0
         self.last_y = 0
@@ -178,7 +182,7 @@ class ClosureCalc(tk.Tk):
         
 
     def update_redirect(self):
-        os.startfile("https://github.com/gsuofc/closure-calc-gui/releases/latest")
+        webbrowser.open("https://github.com/gsuofc/closure-calc-gui/releases/latest")
 
     def add_row(self, index=None):
         if index is None:
