@@ -1,12 +1,14 @@
-# Closure Calc Gui
+# ![Closure Calc GUI Icon, showing a depiction of a survey plan with a large closure](https://raw.githubusercontent.com/gsuofc/closure-calc-gui/refs/heads/main/icon.png)  Closure Calc Gui 
 Calculate the closure for a survey plan using a series of line segments
 ### Download
-Download the lastest stable build from the [releases](https://github.com/gsuofc/closure-calc-gui/releases) page, or the latest committed build from [the actions tab](https://github.com/gsuofc/closure-calc-gui/actions).
+Download the lastest stable build from the [releases](https://github.com/gsuofc/closure-calc-gui/releases) page, or the latest committed build from [the actions tab](https://github.com/gsuofc/closure-calc-gui/actions) (subject to github actions data retention - note that older builds will be removed by github).
 
-![Closure Calc GUI Screenshot, with grid of inputs on the left and visual diagram on the right](https://github.com/gsuofc/closure-calc-gui/blob/main/screenshot.png?raw=true)
+![Closure Calc GUI Screenshot, with grid of inputs on the left and visual diagram on the right](https://raw.githubusercontent.com/gsuofc/closure-calc-gui/refs/heads/main/screenshot.png)
 
 ### Basic Usage
-This program requires Python 3, turtle, and tkinter to be installed in order to function. Use the checkbox to select if a segment is a curve or a line, and enter the measurements of the segment. Segments have the following fields:
+This program requires Python 3, turtle, and tkinter to be installed in order to function (PyGithub is required for update checking). When ran as an .exe, all required python libraries are bundled in. 
+
+Use the checkbox to select if a segment is a curve or a line, and enter the measurements of the segment. Segments have the following fields:
 - Line:
   - Bearing (Deg,Min,Sec)
   - Distance
@@ -24,6 +26,7 @@ Specific functionality will occur when fields are formatted as follows:
 - Radius left blank: Re-uses radius from previous segment
 - Radius with negative value: Curves clockwise rather than counter-clockwise
 - Radial Bearing left blank: Re-uses final bearing from previous segment
+- Math Evaluation: In distance, Arc Length, and Radius fields enter math statements to be evaluated (i.e. `5.5*8+1`)
  
 ### Keyboard Controls:
 Shift + Arrow Keys: Move selected text box
@@ -36,10 +39,17 @@ Tab: Go to next column
 
 Shift+Tab: Go to previous column
 
+### Plan View Controls:
+Left click + drag: Pans the plan view
+
+Scroll wheel: Zooms the plan view in and out
+
 ### Other Features
 Save: Saves the current set of segments to file (JSON)
 
 Load: Loads a set of segments from file (JSON)
+
+Clear: Clears all segments without saving to start fresh
 
 Generate Report: Creates a report with information on the closure, and the list of segments (TXT)
 
