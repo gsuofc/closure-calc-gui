@@ -56,8 +56,8 @@ def safe_evaluate(expression, enabled = True):
         return expression # Possibly raise an error but at this point we only care for a value 
     
     try:
-        cleaned_expr = re.sub(r'\b0+(?=\d)', '', expression)
-        evalued =  eval(cleaned_expr)
+        #cleaned_expr = re.sub(r'\b0+(?=\d)', '', expression)
+        evalued =  eval(expression)
         return evalued
     except:
         print("Error with eval: %s"%expression)
@@ -722,15 +722,15 @@ class ClosureCalc(tk.Tk):
             is_curve = row_widgets["curve"].get()
             # Calculation depends on if the segment is a curve or a straight line
             if is_curve:
-                d = safe_evaluate(row_widgets["deg"].get(),self.settings_enable_eval)
-                m = safe_evaluate(row_widgets["min"].get(),self.settings_enable_eval)
-                s = safe_evaluate(row_widgets["sec"].get(),self.settings_enable_eval)
+                d = row_widgets["deg"].get()
+                m = row_widgets["min"].get()
+                s = row_widgets["sec"].get()
                 r = safe_evaluate(row_widgets["radius"].get(),self.settings_enable_eval)
                 a = safe_evaluate(row_widgets["arc"].get(),self.settings_enable_eval)
 
-                rd = safe_evaluate(row_widgets["rb_deg"].get(),self.settings_enable_eval)
-                rm = safe_evaluate(row_widgets["rb_min"].get(),self.settings_enable_eval)
-                rs = safe_evaluate(row_widgets["rb_sec"].get(),self.settings_enable_eval)
+                rd = row_widgets["rb_deg"].get()
+                rm = row_widgets["rb_min"].get()
+                rs = row_widgets["rb_sec"].get()
 
                 curve_segment["rad-bear"] = False
 
@@ -791,9 +791,9 @@ class ClosureCalc(tk.Tk):
 
             else:
                 # A straight line just uses the direct problem
-                d = safe_evaluate(row_widgets["deg"].get(),self.settings_enable_eval)
-                m = safe_evaluate(row_widgets["min"].get(),self.settings_enable_eval)
-                s = safe_evaluate(row_widgets["sec"].get(),self.settings_enable_eval)
+                d = row_widgets["deg"].get()
+                m = row_widgets["min"].get()
+                s = row_widgets["sec"].get()
                 di = safe_evaluate(row_widgets["distance"].get(),self.settings_enable_eval)
 
                 # Reset the curve radius
