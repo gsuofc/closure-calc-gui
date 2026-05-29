@@ -1,4 +1,5 @@
 import math
+import re
 import tkinter as tk
 import turtle
 import json
@@ -44,6 +45,16 @@ def resource_path(relative_path):
         base_path = os.path.abspath(".")
 
     return os.path.join(base_path, relative_path)
+
+def safe_evaluate(expression, enabled = True):
+    if not enabled:
+        return expression
+
+    # Rather than passing any user input we see if 
+    if not re.match(r"^[0-9+\-*/().\s]+$", expression):
+        return expression # Possibly raise an error but at this point we only care for a value 
+    
+    return eval(expression)
 
 class ClosureCalc(tk.Tk):
     def on_close(self):
@@ -143,6 +154,9 @@ class ClosureCalc(tk.Tk):
             self.add_row()
 
         self.closure_stats = []
+
+        # Settings 
+        self.settings_enable_eval = True
 
         self.turtle_main = turtle.Turtle()
         self.turtle_dots = turtle.Turtle()
@@ -700,15 +714,15 @@ class ClosureCalc(tk.Tk):
             is_curve = row_widgets["curve"].get()
             # Calculation depends on if the segment is a curve or a straight line
             if is_curve:
-                d = row_widgets["deg"].get()
-                m = row_widgets["min"].get()
-                s = row_widgets["sec"].get()
-                r = row_widgets["radius"].get()
-                a = row_widgets["arc"].get()
+                d = safe_evaluate(row_widgets["deg"].get(),self.settings_enable_eval)
+                m = safe_evaluate(row_widgets["min"].get(),self.settings_enable_eval)
+                s = safe_evaluate(row_widgets["sec"].get(),self.settings_enable_eval)
+                r = safe_evaluate(row_widgets["radius"].get(),self.settings_enable_eval)
+                a = safe_evaluate(row_widgets["arc"].get(),self.settings_enable_eval)
 
-                rd = row_widgets["rb_deg"].get()
-                rm = row_widgets["rb_min"].get()
-                rs = row_widgets["rb_sec"].get()
+                rd = safe_evaluate(row_widgets["rb_deg"].get(),self.settings_enable_eval)
+                rm = safe_evaluate(row_widgets["rb_min"].get(),self.settings_enable_eval)
+                rs = safe_evaluate(row_widgets["rb_sec"].get(),self.settings_enable_eval)
 
                 curve_segment["rad-bear"] = False
 
@@ -769,10 +783,10 @@ class ClosureCalc(tk.Tk):
 
             else:
                 # A straight line just uses the direct problem
-                d = row_widgets["deg"].get()
-                m = row_widgets["min"].get()
-                s = row_widgets["sec"].get()
-                di = row_widgets["distance"].get()
+                d = safe_evaluate(row_widgets["deg"].get(),self.settings_enable_eval)
+                m = safe_evaluate(row_widgets["min"].get(),self.settings_enable_eval)
+                s = safe_evaluate(row_widgets["sec"].get(),self.settings_enable_eval)
+                di = safe_evaluate(row_widgets["distance"].get(),self.settings_enable_eval)
 
                 # Reset the curve radius
                 radius = 0
