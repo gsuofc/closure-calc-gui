@@ -1,6 +1,7 @@
 import math
 import re
 import tkinter as tk
+import traceback
 import turtle
 import json
 from tkinter import filedialog
@@ -18,7 +19,7 @@ import os
 FILE_PROG_MAGIC = "GS_CLOSURE_CALC_GUI"
 
 REPORT_VERSION = 3
-FILE_VERSION = 1 # Prior to 1.3, files did not have any headers. 
+FILE_VERSION = 2 # Prior to 1.3, files did not have any headers. 
 MIN_FILE_VERSION = 1
 
 SUPPORT_LEGACY_FILE_FORMAT = True # In case we ever want to drop support for this, we can prevent opening files without the header
@@ -54,7 +55,13 @@ def safe_evaluate(expression, enabled = True):
     if not re.match(r"^[0-9+\-*/().\s]+$", expression):
         return expression # Possibly raise an error but at this point we only care for a value 
     
-    return eval(expression)
+    try:
+        cleaned_expr = re.sub(r'\b0+(?=\d)', '', expression)
+        evalued =  eval(cleaned_expr)
+        return evalued
+    except:
+        print("Error with eval: %s"%expression)
+        return expression
 
 class ClosureCalc(tk.Tk):
     def on_close(self):
@@ -577,6 +584,7 @@ class ClosureCalc(tk.Tk):
                 self.compute_closure()
             except Exception as e:
                 mb.showerror("Unable to open file", f"There was an error processing the file {file_path}.\nError: {e}")
+                traceback.print_exc()
 
     def _on_mousewheel(self, event):
         # On Windows and Mac, event.delta is multiples of 120
