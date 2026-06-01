@@ -8,7 +8,11 @@ from tkinter import filedialog
 from tkinter import messagebox as mb
 from tkinter import simpledialog
 from datetime import datetime
+import rows_controller
 from version_checking import *
+from closure_helper import *
+from consts import *
+from exporting import write_report_to_file
 import threading
 import webbrowser
 import platform
@@ -16,26 +20,6 @@ import platform
 import sys
 import os
 
-FILE_PROG_MAGIC = "GS_CLOSURE_CALC_GUI"
-
-REPORT_VERSION = 3
-FILE_VERSION = 2 # Prior to 1.3, files did not have any headers. 
-MIN_FILE_VERSION = 1
-
-SUPPORT_LEGACY_FILE_FORMAT = True # In case we ever want to drop support for this, we can prevent opening files without the header
-
-def is_frozen():
-    return getattr(sys, 'frozen', False)
-
-if not is_frozen():
-    import gen_version_number
-    gen_version_number.gen_version_info()
-
-try:
-    from version_info import __git_hash__, __git_raw_hash__
-except ImportError:
-    __git_hash__ = "***version info unavalible***"
-    __git_raw_hash__ = None
 
 def resource_path(relative_path):
     """ Get absolute path to resource, works for dev and for PyInstaller """
@@ -76,7 +60,6 @@ class ClosureCalc(tk.Tk):
     def __init__(self):
         # Init the GUI
         super().__init__()
-
 
         build_text = __git_hash__
         if is_frozen():
@@ -155,10 +138,10 @@ class ClosureCalc(tk.Tk):
             label = tk.Label(self.scrollable_frame, text=text, font=("Arial", 10, "bold"))
             label.grid(row=0, column=col, padx=5, pady=5)
         
-        self.row_id = 1
-        self.rows = []
+        self.row_controller = rows_controller(self)
+
         for i in range(1,10):
-            self.add_row()
+            self.row_controller.add_row()
 
         self.closure_stats = []
 
@@ -206,167 +189,7 @@ class ClosureCalc(tk.Tk):
         webbrowser.open("https://github.com/gsuofc/closure-calc-gui/releases/latest")
 
     def add_row(self, index=None):
-        if index is None:
-            index = len(self.rows)
-
-        row_widgets = {}
-
-        curve_var = tk.BooleanVar()
-        curve_check = tk.Checkbutton(
-            self.scrollable_frame,
-            variable=curve_var,
-            command=self.regrid_rows
-        )
-        row_widgets["curve"] = curve_var
-        row_widgets["check"] = curve_check
-
-        fields = [
-            "deg", "min", "sec",
-            "distance", "radius", "arc",
-            "rb_deg", "rb_min", "rb_sec"
-        ]
-
-        rid = self.row_id
-
-        for field in fields:
-            row_widgets[field] = tk.Entry(self.scrollable_frame, width=10)
-            row_widgets[field].bind("<FocusOut>", lambda e, r=row_widgets: self.on_entry_edit(r))
-            row_widgets[field].bind("<Shift-Down>", lambda e, f=field, i=rid: self.focus_next_row_field(i, f))
-            row_widgets[field].bind("<Shift-Up>", lambda e, f=field, i=self.row_id: self.focus_prev_row_field(i, f))
-            row_widgets[field].bind("<Down>", lambda e, f=field, i=rid: self.focus_next_row_field(i, f))
-            row_widgets[field].bind("<Up>", lambda e, f=field, i=self.row_id: self.focus_prev_row_field(i, f))
-            row_widgets[field].bind("<Return>", lambda e, f=field, i=rid: self.focus_next_row_field_return(i, f))
-            row_widgets[field].bind("<Shift-Left>", lambda e, f=field, i=rid: self.focus_prev_field_in_row(i, f))
-            row_widgets[field].bind("<Shift-Right>", lambda e, f=field, i=rid: self.focus_next_field_in_row(i, f))
-            row_widgets[field].bind("<space>", lambda e, f=field, i=rid: self.toggle_curve(i, f))
-
-        def make_insert_callback(index):
-            return lambda: self.insert_row_at(index)
-
-        def make_remove_callback(index):
-            return lambda: self.remove_row_at(index)
-
-        row_widgets["insert_btn"] = tk.Button(
-            self.scrollable_frame,
-            text="+",
-            width=2,
-            command=make_insert_callback(index)
-        )
-
-        row_widgets["remove_btn"] = tk.Button(
-            self.scrollable_frame,
-            text="-",
-            width=2,
-            command=make_remove_callback(index)
-        )
-
-        row_widgets["id"] = self.row_id
-
-        self.row_id+=1
-
-        self.rows.insert(index, row_widgets)
-        self.regrid_rows()
-
-    def focus_next_field_in_row(self, row_id, field):
-        field_order = [
-            "deg", "min", "sec",
-            "distance", "radius", "arc",
-            "rb_deg", "rb_min", "rb_sec"
-        ]
-        current_index = next((i for i, row in enumerate(self.rows) if row["id"] == row_id), None)
-        if current_index is None:
-            return
-
-        try:
-            idx = field_order.index(field)
-        except ValueError:
-            return
-
-        for next_idx in range(idx + 1, len(field_order)):
-            next_field = field_order[next_idx]
-            if next_field in self.rows[current_index] and self.rows[current_index][next_field].winfo_viewable():
-                self.rows[current_index][next_field].focus_set()
-                break
-
-    def toggle_curve(self, index, field):
-        cur_row = 0
-        for i in self.rows:
-            if i["id"]==index:
-                break
-            cur_row +=1
-
-        next_row = self.rows[cur_row]
-        next_row["curve"].set(not next_row["curve"].get())
-        self.regrid_rows()
-        text = next_row[field].get().strip()
-        next_row[field].delete(0,tk.END)
-        next_row[field].insert(0,text)
-        return "break"
-
-    def focus_prev_field_in_row(self, row_id, field):
-        field_order = [
-            "deg", "min", "sec",
-            "distance", "radius", "arc",
-            "rb_deg", "rb_min", "rb_sec"
-        ]
-        current_index = next((i for i, row in enumerate(self.rows) if row["id"] == row_id), None)
-        if current_index is None:
-            return
-
-        try:
-            idx = field_order.index(field)
-        except ValueError:
-            return
-
-        for prev_idx in range(idx - 1, -1, -1):
-            prev_field = field_order[prev_idx]
-            if prev_field in self.rows[current_index] and self.rows[current_index][prev_field].winfo_viewable():
-                self.rows[current_index][prev_field].focus_set()
-                break
-
-    def focus_next_row_field(self, index, field):
-        cur_row = 0
-        for i in self.rows:
-            if i["id"]==index:
-                break
-            cur_row +=1
-        next_index = cur_row + 1
-        if next_index < len(self.rows):
-            next_row = self.rows[next_index]
-            if field in next_row and next_row[field].winfo_viewable():
-                next_widget = next_row[field]
-                next_widget.focus_set()
-            else:
-                next_widget = next_row["sec"]
-                next_widget.focus_set()
-
-    def focus_next_row_field_return(self, index, field):
-        cur_row = 0
-        for i in self.rows:
-            if i["id"]==index:
-                break
-            cur_row +=1
-        next_index = cur_row + 1
-        if next_index < len(self.rows):
-            next_row = self.rows[next_index]
-            next_widget = next_row["deg"]
-            next_widget.focus_set()
-
-    def focus_prev_row_field(self, index, field):
-        cur_row = 0
-        for i in self.rows:
-            if i["id"]==index:
-                break
-            cur_row +=1
-        prev_index = cur_row - 1
-        if prev_index >= 0:
-            prev_row = self.rows[prev_index]
-            if field in prev_row and prev_row[field].winfo_viewable():
-                next_widget = prev_row[field]
-                next_widget.focus_set()
-            else:
-                next_widget = prev_row["sec"]
-                next_widget.focus_set()
+        self.row_controller.add_row(self, index)
 
     def gen_report(self):
         if self.currently_drawing:
@@ -388,36 +211,7 @@ class ClosureCalc(tk.Tk):
         )
 
         if file_path:
-            f = open(file_path,"w")
-            f.write("Closure Report for %s\n"%report_name)
-            f.write("Closure: 1/%.0f\n"%self.closure_stats["closure"])
-            f.write("Sum of distances of lines: %.3f\n"%self.closure_stats["distance"])
-            f.write("Displacement of final point: %.3f\n"%self.closure_stats["displacement"])
-            f.write("Coordinates of final point: (%.3f,%.3f)\n"%(self.closure_stats["x"],self.closure_stats["y"]))
-            f.write("Date of report: %s\n"%datetime.today().strftime('%Y-%m-%d'))
-            seg_count = 1
-            for i in self.direct_points:
-                if i['is_curve']:
-                    curve = i['curve_segment']
-                    f.write("\nCurve Segment %i:\n"%seg_count)
-                    f.write("Radius of Curve Segment: %.3f\n"%curve["radius"])
-                    f.write("Length of Curve Segment: %.3f\n"%curve["arc"])
-                    (d,m,s) = self.compute_dms_from_dd(abs(math.degrees(curve["arc"]/curve["radius"])))
-                    f.write("Delta of Curve Segment: %.0f-%.0f-%.3f\n"%(d,m,s))
-                    if curve["rad-bear"]:
-                        f.write("Radial Bearing of Curve Segment: %.0f-%.0f-%.3f\n"%(curve["rad-d"],curve["rad-m"],curve["rad-s"]))
-                    f.write("Bearing after Curve Segment: %.0f-%.0f-%.3f\n"%(curve["bearing-d"],curve["bearing-m"],curve["bearing-s"]))
-                else:
-                    line = i['line_segment']
-                    f.write("\nLine Segment %i:\n"%seg_count)
-                    f.write("Distance of Line Segment: %.3f\n"%line["distance"])
-                    f.write("Bearing of Line Segment: %.0f-%.0f-%.3f\n"%(line["bearing-d"],line["bearing-m"],line["bearing-s"]))
-                f.write("Coordinates of point after segment: (%f,%f)\n"%(i['y'],i['x']))
-                seg_count+=1
-            f.write("\n---Report Version %i---"%REPORT_VERSION)
-            f.write("\n---Generated by closure-calc-gui version %s---"%__git_hash__)
-            f.close()
-            print(f"Data saved to {file_path}")
+            write_report_to_file(file_path,report_name,self.closure_stats,self.direct_points)
 
     def save_csv(self):
         if self.currently_drawing:
@@ -939,73 +733,6 @@ class ClosureCalc(tk.Tk):
 
         self.last_x = x
         self.last_y = y
-
-    
-    def compute_dxdy_from_straightline(self,rads,di):
-        # Using a distance and angle, compute the next set of coords (direct problem)
-        (dx,dy) = self.compute_direct(di,rads)
-
-        return (dx,dy,rads)
-
-    def compute_dxdy_from_curve_delta(self,rad_bearing,rad,r):
-        # Using a starting bearing, curve radius and bearing, compute the next set of coords
-        # This is done by going towards the radius, adding the angle, and then going going away
-        bearing_towards = rad_bearing-math.radians(90)
-        bearing_away = bearing_towards-math.radians(180)-rad
-        bearing_new = bearing_away-math.radians(90)
-
-        (dx1,dy1) = self.compute_direct(r,bearing_towards)
-        (dx2,dy2) = self.compute_direct(r,bearing_away)
-
-        dx = dx1+dx2
-        dy = dy1+dy2
-
-        return (dx,dy,bearing_new)
-
-    def compute_direct(self,dist,rad):
-        # Computes the direct problem (give change in distance using distance and radius)
-        dx = dist*math.cos(rad)
-        dy = dist*math.sin(rad)
-
-        return (dx,dy)
-    
-    def compute_dms_from_dd(self,dd, round_off = True):
-        b_d = math.floor(dd)
-        b_min = (dd-b_d)*60
-        b_m = math.floor(b_min)
-        b_s = (b_min-b_m)*60
-        if round_off:
-            #check to see if seconds rounds to 60 - if so fix
-            rounded_s = round(b_s, 3)
-            if rounded_s >=60.0:
-                b_m +=1
-                b_s -=60
-                if b_m >= 60.0:
-                    b_d +=1
-                    b_m -=60
-                    if b_d >= 360.0:
-                        b_d-=360
-
-            #given that if we do the above, 59.9999 will become -0.0001. This will round to -0, we would rather just have 0. 
-            if b_d < 0:
-                b_d = 0
-            if b_m < 0:
-                b_m = 0
-            if b_s < 0:
-                b_s = 0
-            #Perhaps there is a better way of doing this - maybe having rounding as arguement rather than being hardcoded? TODO: 
-            #For now adding default argument in case I want to not do this
-
-        return (b_d, b_m, b_s)
-    
-    def compute_dd_from_dms(self,d,m,s):
-        #TODO: Check for negative DMS
-        dd = d
-        dd += m/60
-        dd += s/(60*60)
-        return dd
-    
-
 
 if __name__ == "__main__":
     app = ClosureCalc()
