@@ -1,6 +1,7 @@
 import tkinter as tk
 from closure_keybind_actions import keybind_actions
-from consts import FIELDS_NEEDED
+from consts import FIELDS_NEEDED, FILE_PROG_MAGIC, FILE_VERSION, MIN_FILE_VERSION, SUPPORT_LEGACY_FILE_FORMAT
+from tkinter import messagebox as mb
 
 """
 Hoping this will store all the rows. 
@@ -121,3 +122,66 @@ class rows_controller():
                 elif isinstance(widget, tk.Checkbutton) or isinstance(widget, tk.Button):
                     widget.destroy()
         self.rows.clear()
+
+    def eval_json_file(self,file,):
+        if isinstance(file, dict):
+            if "header" in file and "program_name" in file["header"]:
+                file_header = file["header"]["program_name"]
+                if file_header==FILE_PROG_MAGIC:
+                    # At this point, it is safe to assume file is valid (idealy more validation happens but if the magic matches then it is super unlikely unless tampering occured)
+                    file_ver = file["header"]["file_version"]
+                    if file_ver < MIN_FILE_VERSION:
+                        mb.showwarning("File version mismatch", "File may be too old to be supported by this software! \n(File version: %i, Min supported: %i)"%(file_ver,MIN_FILE_VERSION))
+                    if file_ver > FILE_VERSION:
+                        mb.showwarning("File version mismatch", "File may be too new to be supported by this software! \n(File version: %i, Max supported: %i)"%(file_ver,FILE_VERSION))
+
+                    return file["data"]
+                else:
+                    raise ValueError("File header in file does not match expected file header")
+            else:
+                raise ValueError("File does not contain valid data to import. (JSON ROOT = Dict)")
+        elif isinstance(file, list):
+            # Possibly a legacy file format
+            if len(file)>0 and isinstance(file[0], dict) and "is_curve" in file[0] and SUPPORT_LEGACY_FILE_FORMAT:
+                # Reason to believe its the legacy format, import it
+                print("This file is a legacy file format. Please note that support for this format is limited.")
+                return file
+            else: 
+                raise ValueError("File does not contain valid data to import. (JSON ROOT = List)")
+        else:
+            raise ValueError("File does not contain valid data to import. (JSON ROOT = Other)")
+
+    def load_data_from_json(self,data):
+        for item in data:
+            self.add_row()
+
+            row_widgets = self.rows[-1]
+            row_widgets["curve"].set(item.get("is_curve", False))
+            row_widgets["deg"].insert(0, item.get("deg", ""))
+            row_widgets["min"].insert(0, item.get("min", ""))
+            row_widgets["sec"].insert(0, item.get("sec", ""))
+            row_widgets["distance"].insert(0, item.get("distance", ""))
+            row_widgets["radius"].insert(0, item.get("radius", ""))
+            row_widgets["arc"].insert(0, item.get("arc", ""))
+            row_widgets["rb_deg"].insert(0, item.get("rb_deg", ""))
+            row_widgets["rb_min"].insert(0, item.get("rb_min", ""))
+            row_widgets["rb_sec"].insert(0, item.get("rb_sec", ""))
+
+    def save_data_as_dict(self):
+        all_data = []
+        for row_widgets in self.rows:
+            data = {
+                "is_curve": row_widgets["curve"].get(),
+                "deg": row_widgets["deg"].get(),
+                "min": row_widgets["min"].get(),
+                "sec": row_widgets["sec"].get(),
+                "distance": row_widgets["distance"].get(),
+                "radius": row_widgets["radius"].get(),
+                "arc": row_widgets["arc"].get(),
+                "rb_deg": row_widgets["rb_deg"].get(),
+                "rb_min": row_widgets["rb_min"].get(),
+                "rb_sec": row_widgets["rb_sec"].get()
+            }
+            all_data.append(data)
+
+        return all_data

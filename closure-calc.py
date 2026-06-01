@@ -228,21 +228,7 @@ class ClosureCalc(tk.Tk):
     def save_closure(self):
         # Takes the values in all the inputs and saves them to a JSON file
         # The first step is to create an array and store all the rows as dicts
-        all_data = []
-        for row_widgets in self.row_controller.rows:
-            data = {
-                "is_curve": row_widgets["curve"].get(),
-                "deg": row_widgets["deg"].get(),
-                "min": row_widgets["min"].get(),
-                "sec": row_widgets["sec"].get(),
-                "distance": row_widgets["distance"].get(),
-                "radius": row_widgets["radius"].get(),
-                "arc": row_widgets["arc"].get(),
-                "rb_deg": row_widgets["rb_deg"].get(),
-                "rb_min": row_widgets["rb_min"].get(),
-                "rb_sec": row_widgets["rb_sec"].get()
-            }
-            all_data.append(data)
+        all_data = self.row_controller.save_data_as_dict()
         
         # Now save the file
         file_path = filedialog.asksaveasfilename(
@@ -294,34 +280,9 @@ class ClosureCalc(tk.Tk):
             
             data = []
 
-            # Determine if the file is the legacy format
+            # Determine if the file is valid
             try: 
-                if isinstance(file, dict):
-                    if "header" in file and "program_name" in file["header"]:
-                        file_header = file["header"]["program_name"]
-                        if file_header==FILE_PROG_MAGIC:
-                            # At this point, it is safe to assume file is valid (idealy more validation happens but if the magic matches then it is super unlikely unless tampering occured)
-                            file_ver = file["header"]["file_version"]
-                            if file_ver < MIN_FILE_VERSION:
-                                mb.showwarning("File version mismatch", "File may be too old to be supported by this software! \n(File version: %i, Min supported: %i)"%(file_ver,MIN_FILE_VERSION))
-                            if file_ver > FILE_VERSION:
-                                mb.showwarning("File version mismatch", "File may be too new to be supported by this software! \n(File version: %i, Max supported: %i)"%(file_ver,FILE_VERSION))
-
-                            data = file["data"]
-                        else:
-                            raise ValueError("File header in file does not match expected file header")
-                    else:
-                        raise ValueError("File does not contain valid data to import. (JSON ROOT = Dict)")
-                elif isinstance(file, list):
-                    # Possibly a legacy file format
-                    if len(file)>0 and isinstance(file[0], dict) and "is_curve" in file[0] and SUPPORT_LEGACY_FILE_FORMAT:
-                        # Reason to believe its the legacy format, import it
-                        print("%s is a legacy file format. Please note that support for this format is limited."%file_path)
-                        data = file
-                    else: 
-                        raise ValueError("File does not contain valid data to import. (JSON ROOT = List)")
-                else:
-                    raise ValueError("File does not contain valid data to import. (JSON ROOT = Other)")
+                data = self.row_controller.eval_json_file(file)
             except ValueError as e:
                 mb.showerror("Unable to open file", f"There was an error opening the file {file_path}.\nError: {e}")
                 return
@@ -330,21 +291,10 @@ class ClosureCalc(tk.Tk):
 
             # Load new data
             try:
-                for item in data:
-                    self.row_controller.add_row()
+                # Load data
+                self.row_controller.load_data_from_json(data)
 
-                    row_widgets = self.row_controller.rows[-1]
-                    row_widgets["curve"].set(item.get("is_curve", False))
-                    row_widgets["deg"].insert(0, item.get("deg", ""))
-                    row_widgets["min"].insert(0, item.get("min", ""))
-                    row_widgets["sec"].insert(0, item.get("sec", ""))
-                    row_widgets["distance"].insert(0, item.get("distance", ""))
-                    row_widgets["radius"].insert(0, item.get("radius", ""))
-                    row_widgets["arc"].insert(0, item.get("arc", ""))
-                    row_widgets["rb_deg"].insert(0, item.get("rb_deg", ""))
-                    row_widgets["rb_min"].insert(0, item.get("rb_min", ""))
-                    row_widgets["rb_sec"].insert(0, item.get("rb_sec", ""))
-
+                # Loaded, regrid and compute closure
                 self.regrid_rows()
                 self.compute_closure()
             except Exception as e:
