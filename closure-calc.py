@@ -148,15 +148,18 @@ class ClosureCalc(tk.Tk):
     
     def _check_for_updates_thread(self):
         if get_hash() is not None:
-            try:
-                if is_newer_version(get_hash()):
-                    newest_version = get_latest_version_number()
-                    self.after(
-                        0,
-                        lambda: self.update_is_detected(newest_version)
-                    )
-            except:
-                print("Error checking for updates. Is Github Down, or are you connected to the internet?")
+            if not is_frozen() or platform.system() == "Windows":
+                try:
+                    if is_newer_version(get_hash()):
+                        newest_version = get_latest_version_number()
+                        self.after(
+                            0,
+                            lambda: self.update_is_detected(newest_version)
+                        )
+                except:
+                    print("Error checking for updates. Is Github Down, or are you connected to the internet?")
+            else:
+                print("Software updat checker is not supported for this version. Run as a script to enable this feature.")
     def update_is_detected(self,newest_version):
         mb.showinfo(
             "Update Avalible", 
