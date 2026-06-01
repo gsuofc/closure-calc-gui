@@ -1,4 +1,5 @@
 import math
+import re
 
 
 def compute_dxdy_from_straightline(rads,di):
@@ -64,3 +65,26 @@ def compute_dd_from_dms(d,m,s):
     dd += m/60
     dd += s/(60*60)
     return dd
+
+def safe_evaluate(expression, enabled = True):
+    if not enabled:
+        return expression
+
+    # Rather than passing any user input we see if 
+    if not re.match(r"^[0-9+\-*/().\s]+$", expression):
+        return expression # Possibly raise an error but at this point we only care for a value 
+    
+    try:
+        #cleaned_expr = re.sub(r'\b0+(?=\d)', '', expression)
+        evalued =  eval(expression)
+        return evalued
+    except:
+        print("Error with eval: %s"%expression)
+        return expression
+    
+def is_number(s):
+    try:
+        float(s)
+        return True
+    except ValueError:
+        return False
