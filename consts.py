@@ -28,3 +28,8 @@ except ImportError:
     __git_hash__ = "***version info unavalible***"
     __git_raw_hash__ = None
 
+def get_version_number():
+    return __git_hash__
+
+def get_hash():
+    return __git_raw_hash__

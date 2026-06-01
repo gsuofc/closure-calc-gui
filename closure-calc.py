@@ -8,7 +8,7 @@ from tkinter import filedialog
 from tkinter import messagebox as mb
 from tkinter import simpledialog
 from datetime import datetime
-import rows_controller
+from rows_controller import rows_controller
 from version_checking import *
 from closure_helper import *
 from consts import *
@@ -61,7 +61,7 @@ class ClosureCalc(tk.Tk):
         # Init the GUI
         super().__init__()
 
-        build_text = __git_hash__
+        build_text = get_version_number()
         if is_frozen():
             build_text+=" (running as executable)"
         else:
@@ -167,9 +167,9 @@ class ClosureCalc(tk.Tk):
         ).start()
     
     def _check_for_updates_thread(self):
-        if __git_raw_hash__ is not None:
+        if get_hash() is not None:
             try:
-                if is_newer_version(__git_raw_hash__):
+                if is_newer_version(get_hash()):
                     newest_version = get_latest_version_number()
                     self.after(
                         0,
@@ -180,7 +180,7 @@ class ClosureCalc(tk.Tk):
     def update_is_detected(self,newest_version):
         mb.showinfo(
             "Update Avalible", 
-            f"There is a newer version ({newest_version}) available.\nYou currently have {__git_hash__}.\nClick 'Update Now' or go to https://github.com/gsuofc/closure-calc-gui/releases"
+            f"There is a newer version ({newest_version}) available.\nYou currently have {get_hash()}.\nClick 'Update Now' or go to https://github.com/gsuofc/closure-calc-gui/releases"
         )
         self.update_button.grid(row=0, column=99)
         
@@ -271,7 +271,7 @@ class ClosureCalc(tk.Tk):
         header = {
             "program_name": FILE_PROG_MAGIC,
             "file_version": FILE_VERSION,
-            "program_version": __git_hash__
+            "program_version": get_hash()
         }
 
         file = {
@@ -287,16 +287,10 @@ class ClosureCalc(tk.Tk):
     def clear_closure(self):
         answer = mb.askyesno("Clear all data?", "Do you want to clear all data? All unsaved changes will be lost.")
         if answer:
-            for row in self.rows:
-                for widget in row.values():
-                    if isinstance(widget, tk.Entry):
-                        widget.destroy()
-                    elif isinstance(widget, tk.Checkbutton) or isinstance(widget, tk.Button):
-                        widget.destroy()
-            self.rows.clear()
+            self.row_controller.clear()
             for i in range(1,10):
-                self.add_row()
-            self.regrid_rows()
+                self.row_controller.add_row()
+            self.row_controller.regrid_rows()
             self.compute_closure()
 
     def load_closure(self):
@@ -349,20 +343,14 @@ class ClosureCalc(tk.Tk):
                 mb.showerror("Unable to open file", f"There was an error opening the file {file_path}.\nError: {e}")
                 return
             # Clear existing rows
-            for row in self.rows:
-                for widget in row.values():
-                    if isinstance(widget, tk.Entry):
-                        widget.destroy()
-                    elif isinstance(widget, tk.Checkbutton) or isinstance(widget, tk.Button):
-                        widget.destroy()
-            self.rows.clear()
+            self.row_controller.clear()
 
             # Load new data
             try:
                 for item in data:
-                    self.add_row()
+                    self.row_controller.add_row()
 
-                    row_widgets = self.rows[-1]
+                    row_widgets = self.row_controller.rows[-1]
                     row_widgets["curve"].set(item.get("is_curve", False))
                     row_widgets["deg"].insert(0, item.get("deg", ""))
                     row_widgets["min"].insert(0, item.get("min", ""))
@@ -398,67 +386,8 @@ class ClosureCalc(tk.Tk):
         self.compute_closure()
 
     def regrid_rows(self):
-        for i, row_widgets in enumerate(self.rows, start=1):
-            row_widgets["check"].grid(row=i, column=0, padx=5, pady=2)
-            row_widgets["deg"].grid(row=i, column=1, padx=3, pady=2)
-            row_widgets["min"].grid(row=i, column=2, padx=3, pady=2)
-            row_widgets["sec"].grid(row=i, column=3, padx=3, pady=2)
-
-            # Field visibility depending on curve checkbox
-            if row_widgets["curve"].get():
-                row_widgets["distance"].grid_remove()
-                row_widgets["radius"].grid(row=i, column=5, padx=3, pady=2)
-                row_widgets["arc"].grid(row=i, column=6, padx=3, pady=2)
-                row_widgets["rb_deg"].grid(row=i, column=7, padx=3, pady=2)
-                row_widgets["rb_min"].grid(row=i, column=8, padx=3, pady=2)
-                row_widgets["rb_sec"].grid(row=i, column=9, padx=3, pady=2)
-            else:
-                row_widgets["distance"].grid(row=i, column=4, padx=3, pady=2)
-                row_widgets["radius"].grid_remove()
-                row_widgets["arc"].grid_remove()
-                row_widgets["rb_deg"].grid_remove()
-                row_widgets["rb_min"].grid_remove()
-                row_widgets["rb_sec"].grid_remove()
-
-            # Grid the Insert Row button
-            row_widgets["insert_btn"].grid(row=i, column=10, padx=3, pady=2)
-            row_widgets["remove_btn"].grid(row=i, column=11, padx=3, pady=2)
-
-            row_widgets["insert_btn"].configure(command=lambda idx=i-1: self.insert_row_at(idx))
-            row_widgets["remove_btn"].configure(command=lambda idx=i-1: self.remove_row_at(idx))
-
-    def toggle_fields(self, row_widgets):
-        # When the "curve" checkbox is changed, change which boxes are visible
-        is_curve = row_widgets["curve"].get()
-
-        if is_curve:
-            row_widgets["distance"].grid_remove()
-            row_widgets["radius"].grid()
-            row_widgets["arc"].grid()
-            row_widgets["rb_deg"].grid()
-            row_widgets["rb_min"].grid()
-            row_widgets["rb_sec"].grid()
-        else:
-            row_widgets["distance"].grid()
-            row_widgets["radius"].grid_remove()
-            row_widgets["arc"].grid_remove()
-            row_widgets["rb_deg"].grid_remove()
-            row_widgets["rb_min"].grid_remove()
-            row_widgets["rb_sec"].grid_remove()
-
-    def on_entry_edit(self, row_widgets):
-        if row_widgets == self.rows[-1] or row_widgets == self.rows[-2]:
-            # If any field has data, create a new row
-            for key in [
-                "deg", "min", "sec", "distance",
-                "radius", "arc", "rb_deg", "rb_min", "rb_sec"
-            ]:
-                val = row_widgets[key].get()
-                if val.strip():
-                    for i in range(1,10):
-                        self.add_row()
-                    break
-        self.compute_closure()
+        #TODO: REMOVE
+        self.row_controller.regrid_rows()
 
     def is_number(self, s):
         try:
@@ -509,7 +438,7 @@ class ClosureCalc(tk.Tk):
 
         self.tscreen.tracer(0)  # Turn off automatic screen updates
 
-        for row_widgets in self.rows:
+        for row_widgets in self.row_controller.rows:
             line_segment = {}
             curve_segment = {}
 
@@ -530,7 +459,7 @@ class ClosureCalc(tk.Tk):
 
                 if self.is_number(rd) and self.is_number(rm) and self.is_number(rs):
                     # If a radial bearing is given, change the current bearing to that (otherwise use the last bearing as the starting bearing)
-                    b = self.compute_dd_from_dms(float(rd),float(rm),float(rs))
+                    b = compute_dd_from_dms(float(rd),float(rm),float(rs))
                     b-=90
                     bearing = math.radians(b)
                     #Save radial bearing to file
@@ -544,11 +473,11 @@ class ClosureCalc(tk.Tk):
 
                 if self.is_number(d) and self.is_number(m) and self.is_number(s) and radius!=0:
                     # If interior angle is given, compute the curve from that
-                    dd = self.compute_dd_from_dms(float(d),float(m),float(s))
+                    dd = compute_dd_from_dms(float(d),float(m),float(s))
                     if radius<0:
                         dd*=-1
 
-                    (dx,dy,bearing_new) = self.compute_dxdy_from_curve_delta(bearing,math.radians(dd),radius)
+                    (dx,dy,bearing_new) = compute_dxdy_from_curve_delta(bearing,math.radians(dd),radius)
                     x+=dx
                     y+=dy
 
@@ -563,7 +492,7 @@ class ClosureCalc(tk.Tk):
                 elif radius!=0 and self.is_number(a):
                     #if the arc length is given, convert to interior angle and then compute from that
                     rad = float(a)/radius
-                    (dx,dy,bearing_new) = self.compute_dxdy_from_curve_delta(bearing,rad,radius)
+                    (dx,dy,bearing_new) = compute_dxdy_from_curve_delta(bearing,rad,radius)
                     x+=dx
                     y+=dy
 
@@ -578,7 +507,7 @@ class ClosureCalc(tk.Tk):
                 
                 # Save bearing after curve for file saving/drawing
                 b_degrees = bearing*180/math.pi
-                (b_d, b_m, b_s) = self.compute_dms_from_dd(b_degrees)
+                (b_d, b_m, b_s) = compute_dms_from_dd(b_degrees)
                 curve_segment["bearing-d"] = float(b_d)
                 curve_segment["bearing-m"] = float(b_m)
                 curve_segment["bearing-s"] = float(b_s)
@@ -596,10 +525,10 @@ class ClosureCalc(tk.Tk):
                 if self.is_number(di):
                     # If a new bearing is given, use that as the bearing. Otherwise reuse the last bearing
                     if self.is_number(d) and self.is_number(m) and self.is_number(s): 
-                        b = self.compute_dd_from_dms(float(d),float(m),float(s))
+                        b = compute_dd_from_dms(float(d),float(m),float(s))
                         bearing = math.radians(b)
                     
-                    (dx,dy,bearing_new) = self.compute_dxdy_from_straightline(bearing,float(di))
+                    (dx,dy,bearing_new) = compute_dxdy_from_straightline(bearing,float(di))
 
                     t.seth((90-math.degrees(bearing_new))%360)
                     t.forward(float(di))
@@ -617,7 +546,7 @@ class ClosureCalc(tk.Tk):
                     # Save distance and bearing to file to save/display
                     line_segment["distance"] = abs(float(di))
                     b_degrees = bearing*180/math.pi
-                    (b_d, b_m, b_s) = self.compute_dms_from_dd(b_degrees)
+                    (b_d, b_m, b_s) = compute_dms_from_dd(b_degrees)
                     line_segment["bearing-d"] = float(b_d)
                     line_segment["bearing-m"] = float(b_m)
                     line_segment["bearing-s"] = float(b_s)
@@ -688,7 +617,7 @@ class ClosureCalc(tk.Tk):
 
         b_degrees = bearing*180/math.pi
 
-        (b_d, b_m, b_s) = self.compute_dms_from_dd(b_degrees)
+        (b_d, b_m, b_s) = compute_dms_from_dd(b_degrees)
 
         t.color("black")
         t.write("Closure: 1/%.0f \nd:%.3f di: %.3f\n(x: %.3f, y: %.3f)\nBearing: %d-%d-%.3f"%(closure,dist,distance,x,y,b_d,b_m,b_s))

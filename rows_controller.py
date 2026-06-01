@@ -19,7 +19,9 @@ class rows_controller():
     def get_row_length(self):
         return len(self.rows)
 
-    def add_row(self, index = get_row_length()):
+    def add_row(self, index = None):
+        if index == None:
+            index = self.get_row_length()
         # Each row is just a dict of widgets to grid
         row_widgets = {}
 
@@ -33,7 +35,7 @@ class rows_controller():
         curve_check = tk.Checkbutton(
             scrollable_frame,
             variable=curve_var,
-            command=self.regrid_rows
+            command=self.app.regrid_rows
         )
         row_widgets["curve"] = curve_var
         row_widgets["check"] = curve_check
@@ -80,3 +82,42 @@ class rows_controller():
 
         self.rows.insert(index, row_widgets)
         self.app.regrid_rows()
+
+    def regrid_rows(self):
+        for i, row_widgets in enumerate(self.rows, start=1):
+            row_widgets["check"].grid(row=i, column=0, padx=5, pady=2)
+            row_widgets["deg"].grid(row=i, column=1, padx=3, pady=2)
+            row_widgets["min"].grid(row=i, column=2, padx=3, pady=2)
+            row_widgets["sec"].grid(row=i, column=3, padx=3, pady=2)
+
+            # Field visibility depending on curve checkbox
+            if row_widgets["curve"].get():
+                row_widgets["distance"].grid_remove()
+                row_widgets["radius"].grid(row=i, column=5, padx=3, pady=2)
+                row_widgets["arc"].grid(row=i, column=6, padx=3, pady=2)
+                row_widgets["rb_deg"].grid(row=i, column=7, padx=3, pady=2)
+                row_widgets["rb_min"].grid(row=i, column=8, padx=3, pady=2)
+                row_widgets["rb_sec"].grid(row=i, column=9, padx=3, pady=2)
+            else:
+                row_widgets["distance"].grid(row=i, column=4, padx=3, pady=2)
+                row_widgets["radius"].grid_remove()
+                row_widgets["arc"].grid_remove()
+                row_widgets["rb_deg"].grid_remove()
+                row_widgets["rb_min"].grid_remove()
+                row_widgets["rb_sec"].grid_remove()
+
+            # Grid the Insert Row button
+            row_widgets["insert_btn"].grid(row=i, column=10, padx=3, pady=2)
+            row_widgets["remove_btn"].grid(row=i, column=11, padx=3, pady=2)
+
+            row_widgets["insert_btn"].configure(command=lambda idx=i-1: self.insert_row_at(idx))
+            row_widgets["remove_btn"].configure(command=lambda idx=i-1: self.remove_row_at(idx))
+    
+    def clear(self):
+        for row in self.rows:
+            for widget in row.values():
+                if isinstance(widget, tk.Entry):
+                    widget.destroy()
+                elif isinstance(widget, tk.Checkbutton) or isinstance(widget, tk.Button):
+                    widget.destroy()
+        self.rows.clear()

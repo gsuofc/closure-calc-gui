@@ -97,4 +97,16 @@ class keybind_actions:
                 next_widget = prev_row["sec"]
                 next_widget.focus_set()
 
-    
+    def on_entry_edit(self, row_widgets):
+        if row_widgets == self.rows[-1] or row_widgets == self.rows[-2]:
+            # If any field has data, create a new row
+            for key in [
+                "deg", "min", "sec", "distance",
+                "radius", "arc", "rb_deg", "rb_min", "rb_sec"
+            ]:
+                val = row_widgets[key].get()
+                if val.strip():
+                    for i in range(1,10):
+                        self.add_row()
+                    break
+        self.app.compute_closure()
