@@ -5,6 +5,7 @@ import json
 from tkinter import filedialog
 from tkinter import messagebox as mb
 from tkinter import simpledialog
+from about_menu import About_Window
 from settings_menu import Settings_Menu
 from rows_controller import rows_controller
 from closure_calculator import closure_calculator
@@ -50,6 +51,7 @@ class ClosureCalc(tk.Tk):
         turtle_root.title("Plan View - %s"%build_text)
 
         self.settings = Settings_Menu(self)
+        self.about_window = About_Window(self)
         
         if platform.system() == "Windows":
             self.iconbitmap(resource_path("icon.ico"))
@@ -131,7 +133,7 @@ class ClosureCalc(tk.Tk):
         menubar.add_cascade(label="Calculate",menu=closure_menu)
 
         help_menu = tk.Menu(menubar, tearoff=0)
-        help_menu.add_command(label="About", command=self.load_closure)
+        help_menu.add_command(label="About", command=self.about_window.show_about)
         help_menu.add_separator()
         help_menu.add_command(label="View on Github", command=self.project_redirect)
         help_menu.add_command(label="Download Newest Version", command=self.update_redirect)

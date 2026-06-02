@@ -32,7 +32,7 @@ jobs:
         run: python gen_version_number.py
 
       - name: Build with PyInstaller (Windows)
-        run: pyinstaller --onefile -w closure-calc.py --icon=icon.ico --add-data "icon.ico;."
+        run: pyinstaller --onefile -w closure-calc.py --icon=icon.ico --add-data "icon.ico;." --add-data "icon.png;."
 
       - name: Upload Windows app
         uses: actions/upload-artifact@v4
@@ -65,7 +65,7 @@ jobs:
         run: python gen_version_number.py
 
       - name: Build with PyInstaller (macOS)
-        run: pyinstaller -w closure-calc.py --add-data "icon.ico:." --icon=icon.icns
+        run: pyinstaller -w closure-calc.py --add-data "icon.ico:." --icon=icon.icns --add-data "icon.png:."
 
       - name: Zip macOS .app
         run: |

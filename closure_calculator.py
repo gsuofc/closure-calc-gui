@@ -246,3 +246,6 @@ class closure_calculator:
 
     def has_closure_results(self):
         return self.closure_has_been_done
+    
+    def is_currently_drawing(self):
+        return self.currently_drawing

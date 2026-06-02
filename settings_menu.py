@@ -63,6 +63,7 @@ class Settings_Menu():
         self.window.title("Settings")
         self.window.minsize(width=350,height=500)
         self.window.protocol("WM_DELETE_WINDOW", self.window.destroy)
+        self.window.resizable(False, False)
 
         if platform.system() == "Windows":
             self.window.iconbitmap(resource_path("icon.ico"))

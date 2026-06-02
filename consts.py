@@ -1,6 +1,7 @@
 import os
 import sys
 
+AUTHORS = ['Gavin Schultz']
 
 FILE_PROG_MAGIC = "GS_CLOSURE_CALC_GUI"
 
