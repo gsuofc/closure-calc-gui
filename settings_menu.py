@@ -53,12 +53,10 @@ class Settings_Menu():
             json.dump(settings_json, file, indent=4)
 
     def gen_gui(self):
-        if self.window:
-            self.window.withdraw()
         self.window = tk.Toplevel(self.app)
         self.window.title("Settings")
         self.window.minsize(width=350,height=500)
-        self.window.protocol("WM_DELETE_WINDOW", self.window.withdraw)
+        self.window.protocol("WM_DELETE_WINDOW", self.window.destroy)
 
         if platform.system() == "Windows":
             self.window.iconbitmap(resource_path("icon.ico"))
@@ -98,11 +96,11 @@ class Settings_Menu():
     def show_settings_menu(self):
         self.gen_gui()
         self.window.deiconify() # FOR DEBUG - REMOVE
-        self.window.attributes('-topmost', True)
+        self.window.grab_set() 
         self.window.focus_force()
 
     def cancel_settings(self):
-        self.window.withdraw()
+        self.window.destroy()
 
     def apply_settings(self):
         self.save_settings()

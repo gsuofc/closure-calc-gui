@@ -112,8 +112,26 @@ class ClosureCalc(tk.Tk):
         for i in range(1,10):
             self.row_controller.add_row()
 
-        # Settings 
-        self.settings_enable_eval = True
+        # Menu bar
+        menubar = tk.Menu(self)
+        file_menu = tk.Menu(menubar, tearoff=0)
+        file_menu.add_command(label="Open File...", command=self.load_closure)
+        file_menu.add_command(label="Save File...", command=self.save_closure)
+        file_menu.add_command(label="Clear File...", command=self.clear_closure)
+        file_menu.add_command(label="Generate Report...", command=self.gen_report)
+        file_menu.add_command(label="Export as CSV...", command=self.load_closure)
+        file_menu.add_separator()
+        file_menu.add_command(label="Settings", command=self.open_settings)
+        menubar.add_cascade(label="File",menu=file_menu)
+
+        help_menu = tk.Menu(menubar, tearoff=0)
+        help_menu.add_command(label="About", command=self.load_closure)
+        help_menu.add_separator()
+        help_menu.add_command(label="View on Github", command=self.project_redirect)
+        help_menu.add_command(label="Download Newest Version", command=self.update_redirect)
+        menubar.add_cascade(label="Help",menu=help_menu)
+
+        self.config(menu=menubar)
 
         self.turtle_main = turtle.Turtle()
         self.turtle_dots = turtle.Turtle()
@@ -153,10 +171,15 @@ class ClosureCalc(tk.Tk):
             f"There is a newer version ({newest_version}) available.\nYou currently have {get_hash()}.\nClick 'Update Now' or go to https://github.com/gsuofc/closure-calc-gui/releases"
         )
         self.update_button.grid(row=0, column=99)
-        
+    
+    def open_settings(self):
+        self.settings.show_settings_menu()
 
     def update_redirect(self):
         webbrowser.open("https://github.com/gsuofc/closure-calc-gui/releases/latest")
+
+    def project_redirect(self):
+        webbrowser.open("https://github.com/gsuofc/closure-calc-gui")
 
     def add_row(self, index=None):
         self.row_controller.add_row(self, index)
