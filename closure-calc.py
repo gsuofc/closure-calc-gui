@@ -25,6 +25,7 @@ class ClosureCalc(tk.Tk):
         canvas.bind("<MouseWheel>", self.zoom)
         canvas.bind("<ButtonPress-1>", self.start_pan)
         canvas.bind("<B1-Motion>", self.pan_move)
+        canvas.bind_all("<F5>", self.refresh_button)
 
     def __init__(self):
         # Init the GUI
@@ -91,6 +92,7 @@ class ClosureCalc(tk.Tk):
         )
 
         canvas.bind_all("<MouseWheel>", self._on_mousewheel)
+        self.bind_all("<F5>", self.refresh_button)
 
         canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
         canvas.configure(yscrollcommand=scrollbar.set)
@@ -124,6 +126,10 @@ class ClosureCalc(tk.Tk):
         file_menu.add_command(label="Settings", command=self.open_settings)
         menubar.add_cascade(label="File",menu=file_menu)
 
+        closure_menu = tk.Menu(menubar, tearoff=0)
+        closure_menu.add_command(label="Compute Closure", command=self.compute_closure_manually,accelerator="F5")
+        menubar.add_cascade(label="Calculate",menu=closure_menu)
+
         help_menu = tk.Menu(menubar, tearoff=0)
         help_menu.add_command(label="About", command=self.load_closure)
         help_menu.add_separator()
@@ -152,7 +158,7 @@ class ClosureCalc(tk.Tk):
         ).start()
     
     def _check_for_updates_thread(self):
-        if get_hash() is not None:
+        if (get_hash() is not None) and self.settings.get_settings_option("enable_update_check"):
             if not is_frozen() or platform.system() == "Windows":
                 try:
                     if is_newer_version(get_hash()):
@@ -273,7 +279,7 @@ class ClosureCalc(tk.Tk):
             for i in range(1,10):
                 self.row_controller.add_row()
             self.row_controller.regrid_rows()
-            self.compute_closure()
+            self.compute_closure(True)
 
     def load_closure(self):
         # Takes a json file saved before and fill back in the data 
@@ -309,7 +315,7 @@ class ClosureCalc(tk.Tk):
 
                 # Loaded, regrid and compute closure
                 self.regrid_rows()
-                self.compute_closure()
+                self.compute_closure(True) # Force redraw, as we would like that
             except Exception as e:
                 mb.showerror("Unable to open file", f"There was an error processing the file {file_path}.\nError: {e}")
                 traceback.print_exc()
@@ -319,18 +325,25 @@ class ClosureCalc(tk.Tk):
         self.scrollable_frame.update_idletasks()  # Make sure layout updated
         self.scrollable_frame.master.yview_scroll(int(-1*(event.delta/120)), "units")
 
-    def compute_closure(self):
-        turtle.clearscreen()
-        self.turtle_main.clear()
-        self.turtle_dots.clear()
-        self.turtle_main.penup()
-        self.turtle_main.goto(0, 0)
-        self.turtle_main.setheading(0)
-        self.turtle_main.pendown()
-        self.turtle_dots.penup()
+    def compute_closure(self, force = False):
+        if self.settings.get_settings_option("enable_auto_refresh") or force:
+            turtle.clearscreen()
+            self.turtle_main.clear()
+            self.turtle_dots.clear()
+            self.turtle_main.penup()
+            self.turtle_main.goto(0, 0)
+            self.turtle_main.setheading(0)
+            self.turtle_main.pendown()
+            self.turtle_dots.penup()
 
-        # Run
-        self.closure_run.compute_closure(self.turtle_main, self.turtle_dots, self.tscreen)
+            # Run
+            self.closure_run.compute_closure(self.turtle_main, self.turtle_dots, self.tscreen)
+
+    def compute_closure_manually(self):
+        self.compute_closure(True)
+    
+    def refresh_button(self, event):
+        self.compute_closure(True)
 
     def insert_row_at(self, index):
         self.add_row(index)

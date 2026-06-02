@@ -8,8 +8,12 @@ from consts import get_hash, get_version_number, resource_path
 SETTINGS_FILE = Path.home() / ".closure-calc-config.json"
 
 SETTINGS_OPTIONS = {
-    "enable_math_eval": {"label":"Enable Math Eval","default_value":True}
+    "enable_math_eval": {"label":"Enable Math Eval","default_value":True},
+    "enable_update_check": {"label":"Enable Update Prompt at Startup","default_value":True},
+    "enable_auto_refresh": {"label":"Automatically Compute Closure","default_value":True}
 }
+
+#ADD USING self.app.settings.get_settings_option("enable_auto_refresh")
 
 class Settings_Menu():
     def __init__(self,app=None):
@@ -21,7 +25,6 @@ class Settings_Menu():
 
     def configure_settings(self):
         self.settings = {}
-        # TODO: Load from settings config file
         try:
             with open(SETTINGS_FILE, "r") as file:
                 loaded_settings = json.load(file)
@@ -30,7 +33,10 @@ class Settings_Menu():
         except:
             print("Cannot open settings file. Default options loading...")
             # Init with default options
-            for index, key in enumerate(SETTINGS_OPTIONS):
+        
+        for index, key in enumerate(SETTINGS_OPTIONS):
+            #also handle if settings doesnt exist (i.e. new settings added in an update)
+            if not key in self.settings:
                 self.settings[key] = SETTINGS_OPTIONS[key]["default_value"]
 
         self.save_settings()
