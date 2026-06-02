@@ -1,5 +1,3 @@
-import math
-import re
 import tkinter as tk
 import traceback
 import turtle
@@ -7,7 +5,7 @@ import json
 from tkinter import filedialog
 from tkinter import messagebox as mb
 from tkinter import simpledialog
-from datetime import datetime
+from settings_menu import Settings_Menu
 from rows_controller import rows_controller
 from closure_calculator import closure_calculator
 from version_checking import *
@@ -17,9 +15,6 @@ from exporting import write_report_to_file
 import threading
 import webbrowser
 import platform
-
-import sys
-import os
 
 class ClosureCalc(tk.Tk):
     def on_close(self):
@@ -44,6 +39,7 @@ class ClosureCalc(tk.Tk):
         self.tscreen = turtle.Screen()
         self.title("Plan Closure Calculator - %s"%build_text)
         self.geometry("1000x900")
+        self.minsize(width=800,height=500)
         self.protocol("WM_DELETE_WINDOW", self.on_close)
 
         turtle_canvas = self.tscreen.getcanvas()
@@ -51,6 +47,8 @@ class ClosureCalc(tk.Tk):
         self.rebind_turtle_controls(turtle_canvas)
         turtle_root.protocol("WM_DELETE_WINDOW", self.on_close)
         turtle_root.title("Plan View - %s"%build_text)
+
+        self.settings = Settings_Menu(self)
         
         if platform.system() == "Windows":
             self.iconbitmap(resource_path("icon.ico"))

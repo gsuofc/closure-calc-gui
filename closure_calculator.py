@@ -55,8 +55,8 @@ class closure_calculator:
                 d = row_widgets["deg"].get()
                 m = row_widgets["min"].get()
                 s = row_widgets["sec"].get()
-                r = safe_evaluate(row_widgets["radius"].get(),self.app.settings_enable_eval)
-                a = safe_evaluate(row_widgets["arc"].get(),self.app.settings_enable_eval)
+                r = safe_evaluate(row_widgets["radius"].get(),self.app.settings.get_settings_option("enable_math_eval"))
+                a = safe_evaluate(row_widgets["arc"].get(),self.app.settings.get_settings_option("enable_math_eval"))
 
                 rd = row_widgets["rb_deg"].get()
                 rm = row_widgets["rb_min"].get()
@@ -124,7 +124,7 @@ class closure_calculator:
                 d = row_widgets["deg"].get()
                 m = row_widgets["min"].get()
                 s = row_widgets["sec"].get()
-                di = safe_evaluate(row_widgets["distance"].get(),self.app.settings_enable_eval)
+                di = safe_evaluate(row_widgets["distance"].get(),self.app.settings.get_settings_option("enable_math_eval"))
 
                 # Reset the curve radius
                 radius = 0
