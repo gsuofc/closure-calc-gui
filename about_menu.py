@@ -61,7 +61,7 @@ class About_Window():
             index_auth+=1
 
         for index, value in enumerate(INFO_SUBITEMS): 
-            label = tk.Label(self.window,text=value, font=INFO_SUBFONT)
+            label = tk.Label(self.window,text=value)
             label.grid(row=index+3, column=0)
 
 
