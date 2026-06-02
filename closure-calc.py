@@ -123,7 +123,7 @@ class ClosureCalc(tk.Tk):
         file_menu.add_command(label="Save File...", command=self.save_closure)
         file_menu.add_command(label="Clear File...", command=self.clear_closure)
         file_menu.add_command(label="Generate Report...", command=self.gen_report)
-        file_menu.add_command(label="Export as CSV...", command=self.load_closure)
+        file_menu.add_command(label="Export as CSV...", command=self.save_csv)
         file_menu.add_separator()
         file_menu.add_command(label="Settings", command=self.open_settings)
         menubar.add_cascade(label="File",menu=file_menu)
