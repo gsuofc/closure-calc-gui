@@ -29,7 +29,7 @@ jobs:
           pip install PyGithub
 
       - name: Generate version number
-        run: python gen_version_number.py
+        run: python gen_version_number.py "Github Actions"
 
       - name: Build with PyInstaller (Windows)
         run: pyinstaller --onefile -w closure-calc.py --icon=icon.ico --add-data "icon.ico;." --add-data "icon.png;."
@@ -62,7 +62,7 @@ jobs:
           pip install PyGithub
 
       - name: Generate version number
-        run: python gen_version_number.py
+        run: python gen_version_number.py "Github Actions"
 
       - name: Build with PyInstaller (macOS)
         run: pyinstaller -w closure-calc.py --add-data "icon.ico:." --icon=icon.icns --add-data "icon.png:."

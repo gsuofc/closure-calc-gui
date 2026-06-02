@@ -22,19 +22,27 @@ def is_frozen():
 
 if not is_frozen():
     import gen_version_number
-    gen_version_number.gen_version_info()
+    gen_version_number.gen_version_info("Running as .py")
 
 try:
-    from version_info import __git_hash__, __git_raw_hash__
+    from version_info import __git_hash__, __git_raw_hash__, __time_built__, __build_method__
 except ImportError:
     __git_hash__ = "***version info unavalible***"
     __git_raw_hash__ = None
+    __time_built__ = "***info unavalible***"
+    __build_method__ = "Not Built (Running as .py)"
 
 def get_version_number():
     return __git_hash__
 
 def get_hash():
     return __git_raw_hash__
+
+def build_date():
+    return __time_built__
+
+def build_method():
+    return __build_method__
 
 def resource_path(relative_path):
     """ Get absolute path to resource, works for dev and for PyInstaller """

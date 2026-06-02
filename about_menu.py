@@ -7,6 +7,8 @@ INFO_SUBFONT = ("Arial", 10)
 
 INFO_SUBITEMS = [
                     f"Running via PyInstaller: {is_frozen()}",
+                    f"Build Date: {build_date()}",
+                    f"Build Method: {build_method()}",
                     f"File Version: {FILE_VERSION}",
                     f"Git Hash: {get_hash()}",
                 ]
