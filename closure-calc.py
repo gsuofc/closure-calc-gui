@@ -161,22 +161,29 @@ class ClosureCalc(tk.Tk):
     
     def _check_for_updates_thread(self):
         if (get_hash() is not None) and self.settings.get_settings_option("enable_update_check"):
-            if not is_frozen() or platform.system() == "Windows":
-                try:
+            try:
+                if not is_frozen() or platform.system() == "Windows":
                     if is_newer_version(get_hash()):
                         newest_version = get_latest_version_number()
                         self.after(
                             0,
                             lambda: self.update_is_detected(newest_version)
                         )
-                except:
-                    print("Error checking for updates. Is Github Down, or are you connected to the internet?")
-            else:
-                print("Software updat checker is not supported for this version. Run as a script to enable this feature.")
+                else:
+                    # This is check for updates of the mac pyinstaller version (with the last version being 0.3)
+                    (version, hash, outdated) = get_latest_0_3_version(get_hash())
+                    if outdated:
+                        self.after(
+                        0,
+                        lambda: self.update_is_detected(version)
+                    )
+                        
+            except:
+                print("Error checking for updates. Is Github Down, or are you connected to the internet?")
     def update_is_detected(self,newest_version):
         mb.showinfo(
             "Update Avalible", 
-            f"There is a newer version ({newest_version}) available.\nYou currently have {get_hash()}.\nClick 'Update Now' or go to https://github.com/gsuofc/closure-calc-gui/releases"
+            f"There is a newer version ({newest_version}) available.\nYou currently have {get_version_number()}.\nClick 'Update Now' or go to https://github.com/gsuofc/closure-calc-gui/releases"
         )
         self.update_button.grid(row=0, column=99)
     
