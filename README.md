@@ -26,7 +26,7 @@ Specific functionality will occur when fields are formatted as follows:
 - Radius left blank: Re-uses radius from previous segment
 - Radius with negative value: Curves clockwise rather than counter-clockwise
 - Radial Bearing left blank: Re-uses final bearing from previous segment
-- Math Evaluation: In distance, Arc Length, and Radius fields enter math statements to be evaluated (i.e. `5.5*8+1`)
+- Math Evaluation: In distance, Arc Length, Degrees, and Radius fields enter math statements to be evaluated (i.e. `5.5*8+1`)
  
 ### Keyboard Controls:
 Shift + Arrow Keys: Move selected text box
@@ -38,6 +38,8 @@ Return: Go to next row, first column
 Tab: Go to next column
 
 Shift+Tab: Go to previous column
+
+F5: Recalculate the closure
 
 ### Plan View Controls:
 Left click + drag: Pans the plan view
@@ -54,6 +56,14 @@ Clear: Clears all segments without saving to start fresh
 Generate Report: Creates a report with information on the closure, and the list of segments (TXT)
 
 Export as CSV: Creates a ENU formatted CSV file for use in CAD
+
+### Settings
+Enable Math Eval: Toggle the ability to enable Math Evaluation. Disabling this feature will break any closures that used this feature
+
+Enable Update Prompt at Startup: Check for updates at startup, and prompt if there is an update
+
+Automatically Compute Closure: Compute the closure after editing a field. With this disabled, editing can be done by using the "Compute Closure" button in the menu or by using F5
+
 
 ### Building and Running
 `closure-calc.py` can be run using `python closure-calc.py`. Alternatively, this program can be built using PyInstaller by performing the following
