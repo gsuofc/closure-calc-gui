@@ -261,7 +261,8 @@ class ClosureCalc(tk.Tk):
         header = {
             "program_name": FILE_PROG_MAGIC,
             "file_version": FILE_VERSION,
-            "program_version": get_version_number()
+            "program_version": get_version_number(),
+            "has_used_eval": self.closure_run.has_used_math_eval(),
         }
 
         file = {

@@ -135,6 +135,12 @@ class rows_controller():
                     if file_ver > FILE_VERSION:
                         mb.showwarning("File version mismatch", "File may be too new to be supported by this software! \n(File version: %i, Max supported: %i)"%(file_ver,FILE_VERSION))
 
+                    # If the file uses math eval, but the user has it disabled, warn the user the closure will be broken
+                    if not self.app.settings.get_settings_option("enable_math_eval"):
+                        if "has_used_eval" in file["header"]:
+                            if file["header"]["has_used_eval"]:
+                                mb.showwarning("Detected Math Eval Usage", "Fields in this closure use math equations, but you currently have 'Enable Math Eval' disabled! Closure will not be accurate. Please enable Math Eval to avoid broken closures.")
+
                     return file["data"]
                 else:
                     raise ValueError("File header in file does not match expected file header")

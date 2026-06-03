@@ -10,9 +10,15 @@ class closure_calculator:
         self.app = app
         self.currently_drawing = False
         self.closure_has_been_done = False
+        self.has_used_evals = False
         self.closure_stats = {}
         self.distances = []
         self.direct_points = []
+
+    def detect_math_eval(self,raw_num, eval_num):
+        if (is_number(eval_num) and not is_number(raw_num)):
+            return True
+        return False
 
     def compute_closure(self, t, t2, tscreen):
         if self.currently_drawing:
@@ -45,23 +51,40 @@ class closure_calculator:
 
         tscreen.tracer(0)  # Turn off automatic screen updates
 
+        has_used_evals = False
+
         for row_widgets in self.app.row_controller.rows:
             line_segment = {}
             curve_segment = {}
 
+            d = safe_evaluate(row_widgets["deg"].get(),self.app.settings.get_settings_option("enable_math_eval"))
+            m = row_widgets["min"].get()
+            s = row_widgets["sec"].get()
+            di = safe_evaluate(row_widgets["distance"].get(),self.app.settings.get_settings_option("enable_math_eval"))
+            r = safe_evaluate(row_widgets["radius"].get(),self.app.settings.get_settings_option("enable_math_eval"))
+            a = safe_evaluate(row_widgets["arc"].get(),self.app.settings.get_settings_option("enable_math_eval"))
+
+            rd = safe_evaluate(row_widgets["rb_deg"].get(),self.app.settings.get_settings_option("enable_math_eval"))
+            rm = row_widgets["rb_min"].get()
+            rs = row_widgets["rb_sec"].get()
+
+            d_as_is = row_widgets["deg"].get()
+            di_as_is = row_widgets["distance"].get()
+            rd_as_is = row_widgets["rb_deg"].get()
+            r_as_is = row_widgets["radius"].get()
+            a_as_is = row_widgets["arc"].get()
+
+            if self.app.settings.get_settings_option("enable_math_eval"):
+                has_used_evals |=   self.detect_math_eval(d_as_is, d) or\
+                                    self.detect_math_eval(di_as_is, di)or\
+                                    self.detect_math_eval(rd_as_is, rd)or\
+                                    self.detect_math_eval(r_as_is, r)or\
+                                    self.detect_math_eval(a_as_is, a)\
+            
+
             is_curve = row_widgets["curve"].get()
             # Calculation depends on if the segment is a curve or a straight line
             if is_curve:
-                d = safe_evaluate(row_widgets["deg"].get(),self.app.settings.get_settings_option("enable_math_eval"))
-                m = row_widgets["min"].get()
-                s = row_widgets["sec"].get()
-                r = safe_evaluate(row_widgets["radius"].get(),self.app.settings.get_settings_option("enable_math_eval"))
-                a = safe_evaluate(row_widgets["arc"].get(),self.app.settings.get_settings_option("enable_math_eval"))
-
-                rd = safe_evaluate(row_widgets["rb_deg"].get(),self.app.settings.get_settings_option("enable_math_eval"))
-                rm = row_widgets["rb_min"].get()
-                rs = row_widgets["rb_sec"].get()
-
                 curve_segment["rad-bear"] = False
 
                 if is_number(rd) and is_number(rm) and is_number(rs):
@@ -121,11 +144,6 @@ class closure_calculator:
 
             else:
                 # A straight line just uses the direct problem
-                d = safe_evaluate(row_widgets["deg"].get(),self.app.settings.get_settings_option("enable_math_eval"))
-                m = row_widgets["min"].get()
-                s = row_widgets["sec"].get()
-                di = safe_evaluate(row_widgets["distance"].get(),self.app.settings.get_settings_option("enable_math_eval"))
-
                 # Reset the curve radius
                 radius = 0
 
@@ -229,6 +247,7 @@ class closure_calculator:
         t.color("black")
         t.write("Closure: 1/%.0f \nd:%.3f di: %.3f\n(x: %.3f, y: %.3f)\nBearing: %d-%d-%.3f"%(closure,dist,distance,x,y,b_d,b_m,b_s))
 
+        self.has_used_evals = has_used_evals
 
         tscreen.update()  # Turn off automatic screen updates
 
@@ -249,3 +268,6 @@ class closure_calculator:
     
     def is_currently_drawing(self):
         return self.currently_drawing
+    
+    def has_used_math_eval(self):
+        return self.has_used_evals
