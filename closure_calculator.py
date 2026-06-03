@@ -52,13 +52,13 @@ class closure_calculator:
             is_curve = row_widgets["curve"].get()
             # Calculation depends on if the segment is a curve or a straight line
             if is_curve:
-                d = row_widgets["deg"].get()
+                d = safe_evaluate(row_widgets["deg"].get(),self.app.settings.get_settings_option("enable_math_eval"))
                 m = row_widgets["min"].get()
                 s = row_widgets["sec"].get()
                 r = safe_evaluate(row_widgets["radius"].get(),self.app.settings.get_settings_option("enable_math_eval"))
                 a = safe_evaluate(row_widgets["arc"].get(),self.app.settings.get_settings_option("enable_math_eval"))
 
-                rd = row_widgets["rb_deg"].get()
+                rd = safe_evaluate(row_widgets["rb_deg"].get(),self.app.settings.get_settings_option("enable_math_eval"))
                 rm = row_widgets["rb_min"].get()
                 rs = row_widgets["rb_sec"].get()
 
@@ -121,7 +121,7 @@ class closure_calculator:
 
             else:
                 # A straight line just uses the direct problem
-                d = row_widgets["deg"].get()
+                d = safe_evaluate(row_widgets["deg"].get(),self.app.settings.get_settings_option("enable_math_eval"))
                 m = row_widgets["min"].get()
                 s = row_widgets["sec"].get()
                 di = safe_evaluate(row_widgets["distance"].get(),self.app.settings.get_settings_option("enable_math_eval"))

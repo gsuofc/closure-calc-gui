@@ -9,7 +9,7 @@ class keybind_actions:
 
     def toggle_curve(self, index, field):
         cur_row = 0
-        for i in self.app.rows:
+        for i in self.rows:
             if i["id"]==index:
                 break
             cur_row +=1
