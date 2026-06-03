@@ -2,9 +2,10 @@ import tkinter as tk
 from consts import FIELDS_NEEDED
 
 class keybind_actions:
-    def __init__(self, app, rows):
+    def __init__(self, app, row_cont):
         self.app = app
-        self.rows = rows
+        self.row_cont = row_cont
+        self.rows = row_cont.rows
 
     def toggle_curve(self, index, field):
         cur_row = 0
@@ -107,6 +108,6 @@ class keybind_actions:
                 val = row_widgets[key].get()
                 if val.strip():
                     for i in range(1,10):
-                        self.add_row()
+                        self.row_cont.add_row()
                     break
         self.app.compute_closure()

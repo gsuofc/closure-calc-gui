@@ -15,7 +15,7 @@ class rows_controller():
         # The "id" that will be unique, starting at 1 going up
         self.row_id = 1
         # Helper function to house any keyboard actions
-        self.key_actions = keybind_actions(app, self.rows)
+        self.key_actions = keybind_actions(app, self)
 
     def get_row_length(self):
         return len(self.rows)
@@ -111,8 +111,8 @@ class rows_controller():
             row_widgets["insert_btn"].grid(row=i, column=10, padx=3, pady=2)
             row_widgets["remove_btn"].grid(row=i, column=11, padx=3, pady=2)
 
-            row_widgets["insert_btn"].configure(command=lambda idx=i-1: self.insert_row_at(idx))
-            row_widgets["remove_btn"].configure(command=lambda idx=i-1: self.remove_row_at(idx))
+            row_widgets["insert_btn"].configure(command=lambda idx=i-1: self.app.insert_row_at(idx))
+            row_widgets["remove_btn"].configure(command=lambda idx=i-1: self.app.remove_row_at(idx))
     
     def clear(self):
         for row in self.rows:

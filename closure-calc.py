@@ -190,7 +190,7 @@ class ClosureCalc(tk.Tk):
         webbrowser.open("https://github.com/gsuofc/closure-calc-gui")
 
     def add_row(self, index=None):
-        self.row_controller.add_row(self, index)
+        self.row_controller.add_row(index)
 
     def gen_report(self):
         if self.closure_run.currently_drawing:
@@ -351,8 +351,8 @@ class ClosureCalc(tk.Tk):
         self.add_row(index)
         
     def remove_row_at(self, index):
-        if index < len(self.rows) - 2:
-            row_widgets = self.rows.pop(index)
+        if index < len(self.row_controller.rows) - 2:
+            row_widgets = self.row_controller.rows.pop(index)
             for widget in row_widgets.values():
                 if isinstance(widget, (tk.Entry, tk.Checkbutton, tk.Button)):
                     widget.destroy()
